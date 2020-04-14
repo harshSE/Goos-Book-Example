@@ -1,9 +1,17 @@
 package org.harshdev.goosbook
 
-public enum SniperStatus {
+enum SniperStatus {
 
     STATUS_JOINING("JOINING"),
-    STATUS_CLOSED("CLOSED"),
-    ;
+    STATUS_CLOSED("CLOSED");
+
+    private final String name;
+
+    SniperStatus(String name) {
+        this.name = name
+    }
+
+
+
 
 }

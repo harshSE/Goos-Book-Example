@@ -1,36 +1,65 @@
 package org.harshdev.goosbook
 
-import org.jivesoftware.smack.ConnectionConfiguration
-import org.jivesoftware.smack.XMPPConnection
+import org.jivesoftware.smack.AbstractXMPPConnection
+import org.jivesoftware.smack.chat2.Chat
+import org.jivesoftware.smack.chat2.IncomingChatMessageListener
+import org.jivesoftware.smack.packet.Message
 import org.jivesoftware.smack.tcp.XMPPTCPConnection
 import org.jivesoftware.smack.tcp.XMPPTCPConnectionConfiguration
+import org.jxmpp.jid.EntityBareJid
+import org.jxmpp.jid.impl.JidCreate
 
-public class FakeAuctionServer {
+import static org.jivesoftware.smack.chat2.ChatManager.getInstanceFor
+
+class FakeAuctionServer {
+    private static final String AUCTION_RESOURCE = "auction"
+    private static final String AUCTION_PASSWORD = "auction"
+    private static final String ITEM_ID_AS_LOGIN = "auction-%s"
+    private final SingleMessageListener singleMessageListener = new SingleMessageListener();
     private String itemId
+    private XMPPTCPConnection connection
+    private Chat currentChat;
 
-    public FakeAuctionServer(String itemId) {
+    FakeAuctionServer(String itemId) {
         this.itemId = itemId
         XMPPTCPConnectionConfiguration configuration = XMPPTCPConnectionConfiguration.builder()
-                .setUsernameAndPassword("")
-                .setResource()
-                .setXmppDomain()
+                .setUsernameAndPassword(String.format(ITEM_ID_AS_LOGIN, itemId), AUCTION_PASSWORD)
+                .setResource(AUCTION_RESOURCE)
+                .setXmppDomain("harshdev.com")
+                .setHost("goosbook.harshdev.com")
+                .setHost(ApplicationRunner.XMPP_HOSTNAME)
                 .build();
         this.connection = new XMPPTCPConnection(configuration)
     }
 
-    public void startSellingItem() {
+    void startSellingItem() {
+        this.connection.connect().login()
+        def chatManager = getInstanceFor(connection);
+        chatManager.addIncomingListener(new IncomingChatMessageListener() {
+            @Override
+            void newIncomingMessage(EntityBareJid from, Message message, Chat chat) {
+                currentChat = chat;
+                singleMessageListener.processMessage(message, chat);
+            }
+        })
 
     }
 
-    public void hasReceivedJoinRequestFromSniper() {
-
+    void hasReceivedJoinRequestFromSniper() {
+        singleMessageListener.receiveAMessage()
     }
 
-public void announceClosed() {
-
+    void announceClosed() {
+        currentChat.send(new Message())
     }
 
-    public String getItemId() {
+    String getItemId() {
         return itemId
+    }
+
+    void stop() {
+        if(connection.isConnected()) {
+            connection.disconnect()
+        }
     }
 }

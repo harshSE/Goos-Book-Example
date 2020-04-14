@@ -5,7 +5,7 @@ package org.harshdev.goosbook
 
 class Main {
     static final String SNIPER_STATUS_NAME = ""
-    static final String TOP_WINDOW_NAME = ""
+    static final String MAIN_WINDOW_NAME = ""
 
     String getGreeting() {
         return 'Hello world.'

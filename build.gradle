@@ -34,7 +34,7 @@ test {
     useJUnitPlatform()
 }
 
-task endToEndTest(type: Test) {
+task endToEndTests(type: Test) {
 
     testClassesDirs = sourceSets.endToEndTest.output.classesDirs
     classpath = sourceSets.endToEndTest.runtimeClasspath
@@ -43,19 +43,19 @@ task endToEndTest(type: Test) {
 
 }
 
-check.dependsOn endToEndTest
+check.dependsOn endToEndTests
 
 dependencies {
     // Use the latest Groovy version for building this library
     implementation 'org.codehaus.groovy:groovy-all:3.0.2'
 
-    // Use the awesome Spock testing and specification framework
     testImplementation 'org.spockframework:spock-core:2.0-M2-groovy-3.0'
     testImplementation('org.junit.jupiter:junit-jupiter-api:5.6.1')
 
     testRuntimeOnly('org.junit.platform:junit-platform-launcher:1.6.1')
     testRuntimeOnly('org.junit.jupiter:junit-jupiter-engine:5.6.1')
     testRuntimeOnly('org.junit.vintage:junit-vintage-engine:5.6.1')
+
 
     endToEndTestImplementation('org.junit.jupiter:junit-jupiter-api:5.6.1')
     endToEndTestImplementation('org.spockframework:spock-core:2.0-M2-groovy-3.0')
