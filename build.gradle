@@ -48,6 +48,10 @@ check.dependsOn endToEndTests
 dependencies {
     // Use the latest Groovy version for building this library
     implementation 'org.codehaus.groovy:groovy-all:3.0.2'
+    implementation('org.igniterealtime.smack:smack-tcp:4.3.4')
+    implementation('org.igniterealtime.smack:smack-java7:4.3.4')
+    implementation('org.igniterealtime.smack:smack-experimental:4.3.4')
+    implementation('org.igniterealtime.smack:smack-im:4.3.4')
 
     testImplementation 'org.spockframework:spock-core:2.0-M2-groovy-3.0'
     testImplementation('org.junit.jupiter:junit-jupiter-api:5.6.1')
@@ -60,10 +64,7 @@ dependencies {
     endToEndTestImplementation('org.junit.jupiter:junit-jupiter-api:5.6.1')
     endToEndTestImplementation('org.spockframework:spock-core:2.0-M2-groovy-3.0')
     endToEndTestImplementation('com.googlecode.windowlicker:windowlicker-swing:r268')
-    endToEndTestImplementation('org.igniterealtime.smack:smack-tcp:4.3.4')
-    endToEndTestImplementation('org.igniterealtime.smack:smack-java7:4.3.4')
-    endToEndTestImplementation('org.igniterealtime.smack:smack-experimental:4.3.4')
-    endToEndTestImplementation('org.igniterealtime.smack:smack-im:4.3.4')
+
 
 
     endToEndTestRuntimeOnly('org.junit.platform:junit-platform-launcher:1.6.1')

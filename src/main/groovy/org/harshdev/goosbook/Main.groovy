@@ -3,15 +3,83 @@
  */
 package org.harshdev.goosbook
 
-class Main {
-    static final String SNIPER_STATUS_NAME = ""
-    static final String MAIN_WINDOW_NAME = ""
+import org.harshdev.goosbook.auctionsniper.ui.MainWindow
+import org.jivesoftware.smack.chat2.Chat
+import org.jivesoftware.smack.chat2.ChatManager
+import org.jivesoftware.smack.chat2.IncomingChatMessageListener
+import org.jivesoftware.smack.packet.Message
+import org.jivesoftware.smack.tcp.XMPPTCPConnection
+import org.jivesoftware.smack.tcp.XMPPTCPConnectionConfiguration
+import org.jxmpp.jid.EntityBareJid
+import org.jxmpp.jid.impl.JidCreate
 
-    String getGreeting() {
-        return 'Hello world.'
+import javax.swing.*
+
+import static org.jivesoftware.smack.chat2.ChatManager.getInstanceFor
+
+class Main {
+
+    private static final int ARGS_HOSTNAME = 0
+    private static final int ARGS_USERNAME = 1
+    private static final int ARGS_PASSWORD = 2
+    private static final int ARGS_ITEM_ID = 3
+    private static String AUCTION_RESOURCE = "auction"
+    static final String MAIN_WINDOW_NAME = ""
+    private MainWindow ui
+    static private XMPPTCPConnection connection
+    private Chat notTobeGCd
+
+
+    Main() throws Exception {
+        startUserInterface()
     }
 
     static void main(String[] args) {
-        println new Main().greeting
+        def main = new Main();
+
+        Main.connection = connection(args)
+
+        main.joinAuction(connection, args[ARGS_ITEM_ID])
+
+    }
+
+    private static XMPPTCPConnection connection(String[] args) {
+        XMPPTCPConnectionConfiguration configuration = XMPPTCPConnectionConfiguration.builder()
+                .setUsernameAndPassword(args[ARGS_USERNAME], args[ARGS_PASSWORD])
+                .setResource(AUCTION_RESOURCE)
+                .setXmppDomain("harshdev.com")
+                .setHost(args[ARGS_HOSTNAME])
+                .build();
+        connection = new XMPPTCPConnection(configuration)
+        connection
+    }
+
+    private void joinAuction(XMPPTCPConnection connection, String itemId) {
+        connection.connect().login()
+
+        ChatManager chatManager = getInstanceFor(connection);
+        def jid = "auction-${itemId}@${connection.getXMPPServiceDomain()}/${AUCTION_RESOURCE}"
+        Chat chat = chatManager.chatWith(JidCreate.entityBareFrom(jid))
+        chatManager.addIncomingListener(new IncomingChatMessageListener() {
+            @Override
+            void newIncomingMessage(EntityBareJid from, Message message, Chat c) {
+                println "Incoming message ${message}"
+                SwingUtilities.invokeAndWait(() -> ui.showStatus(SniperStatus.STATUS_LOST))
+            }
+        })
+        this.notTobeGCd = chat
+        
+        chat.send("hello")
+    }
+
+    static void stop() {
+        if(Objects.nonNull(connection)) {
+            connection.disconnect()
+        }
+    }
+
+    private void startUserInterface() throws Exception {
+        SwingUtilities.invokeAndWait(() -> ui = new MainWindow())
+
     }
 }

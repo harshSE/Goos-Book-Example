@@ -1,13 +1,17 @@
 package org.harshdev.goosbook
 
-import org.jivesoftware.smack.AbstractXMPPConnection
+import org.jivesoftware.smack.chat.ChatManagerListener
 import org.jivesoftware.smack.chat2.Chat
+import org.jivesoftware.smack.chat2.ChatManager
 import org.jivesoftware.smack.chat2.IncomingChatMessageListener
+import org.jivesoftware.smack.chat2.OutgoingChatMessageListener
 import org.jivesoftware.smack.packet.Message
+import org.jivesoftware.smack.packet.Presence
 import org.jivesoftware.smack.tcp.XMPPTCPConnection
 import org.jivesoftware.smack.tcp.XMPPTCPConnectionConfiguration
 import org.jxmpp.jid.EntityBareJid
-import org.jxmpp.jid.impl.JidCreate
+
+import javax.security.auth.callback.CallbackHandler
 
 import static org.jivesoftware.smack.chat2.ChatManager.getInstanceFor
 
@@ -26,20 +30,22 @@ class FakeAuctionServer {
                 .setUsernameAndPassword(String.format(ITEM_ID_AS_LOGIN, itemId), AUCTION_PASSWORD)
                 .setResource(AUCTION_RESOURCE)
                 .setXmppDomain("harshdev.com")
-                .setHost("goosbook.harshdev.com")
                 .setHost(ApplicationRunner.XMPP_HOSTNAME)
                 .build();
         this.connection = new XMPPTCPConnection(configuration)
     }
 
     void startSellingItem() {
-        this.connection.connect().login()
-        def chatManager = getInstanceFor(connection);
+
+        connection.connect().login()
+
+        ChatManager chatManager = getInstanceFor(connection);
+
         chatManager.addIncomingListener(new IncomingChatMessageListener() {
             @Override
             void newIncomingMessage(EntityBareJid from, Message message, Chat chat) {
-                currentChat = chat;
-                singleMessageListener.processMessage(message, chat);
+                currentChat = chat
+                singleMessageListener.processMessage(message, chat)
             }
         })
 
@@ -50,7 +56,7 @@ class FakeAuctionServer {
     }
 
     void announceClosed() {
-        currentChat.send(new Message())
+        currentChat.send("CLOSED")
     }
 
     String getItemId() {
@@ -58,8 +64,6 @@ class FakeAuctionServer {
     }
 
     void stop() {
-        if(connection.isConnected()) {
-            connection.disconnect()
-        }
+        connection.disconnect()
     }
 }

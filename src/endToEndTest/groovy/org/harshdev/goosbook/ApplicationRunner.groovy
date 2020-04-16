@@ -9,6 +9,7 @@ class ApplicationRunner {
 
 
     void startBiddingIn(FakeAuctionServer auction) {
+
         Thread thread = new Thread("Test Application") {
             @Override
             public void run() {
@@ -19,7 +20,6 @@ class ApplicationRunner {
                 }
             }
         }
-
         thread.setDaemon(true)
         thread.start()
         driver = new AuctionSniperDriver(1000)
@@ -27,12 +27,13 @@ class ApplicationRunner {
     }
 
     void showSniperHasLostAuction() {
-        driver.showSniperStatus(SniperStatus.STATUS_CLOSED)
+        driver.showSniperStatus(SniperStatus.STATUS_LOST)
     }
 
     void stop() {
         if (Objects.nonNull(driver)) {
             driver.dispose()
         }
+        Main.stop()
     }
 }
