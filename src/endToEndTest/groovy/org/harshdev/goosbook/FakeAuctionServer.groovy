@@ -1,18 +1,17 @@
 package org.harshdev.goosbook
 
-import org.jivesoftware.smack.chat.ChatManagerListener
+
 import org.jivesoftware.smack.chat2.Chat
 import org.jivesoftware.smack.chat2.ChatManager
 import org.jivesoftware.smack.chat2.IncomingChatMessageListener
-import org.jivesoftware.smack.chat2.OutgoingChatMessageListener
 import org.jivesoftware.smack.packet.Message
-import org.jivesoftware.smack.packet.Presence
 import org.jivesoftware.smack.tcp.XMPPTCPConnection
 import org.jivesoftware.smack.tcp.XMPPTCPConnectionConfiguration
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.function.Executable
 import org.jxmpp.jid.EntityBareJid
 
-import javax.security.auth.callback.CallbackHandler
-
+import static org.harshdev.goosbook.api.MessageAssert.assertThat
 import static org.jivesoftware.smack.chat2.ChatManager.getInstanceFor
 
 class FakeAuctionServer {
@@ -51,12 +50,16 @@ class FakeAuctionServer {
 
     }
 
-    void hasReceivedJoinRequestFromSniper() {
-        singleMessageListener.receiveAMessage()
+    void hasReceivedJoinRequestFromSniper(String bidder) {
+        Message message = singleMessageListener.message()
+        Assertions.assertAll(
+                {assertThat(message).from(bidder) } as Executable,
+                {assertThat(message).command("JOIN") } as Executable,
+        )
     }
 
     void announceClosed() {
-        currentChat.send("CLOSED")
+        currentChat.send("SOLVersion: 1.1; Event: CLOSE;")
     }
 
     String getItemId() {
@@ -65,5 +68,19 @@ class FakeAuctionServer {
 
     void stop() {
         connection.disconnect()
+    }
+
+    void reportPrice(int biddingPrice, int increment, String currentBidder) {
+        String message = "SOLVersion: 1.1; Event: PRICE; CurrentPrice: ${biddingPrice}; Increment: ${increment}; Bidder: ${currentBidder};"
+        currentChat.send(message)
+    }
+
+    void hasReceivedBid(int biddingPrice, String bidder) {
+        Message message = singleMessageListener.message()
+        Assertions.assertAll(
+                {assertThat(message).from(bidder) } as Executable,
+                {assertThat(message).command("BID") } as Executable,
+                {assertThat(message).price(biddingPrice) } as Executable,
+        )
     }
 }

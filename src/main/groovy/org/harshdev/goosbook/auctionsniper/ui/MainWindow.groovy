@@ -10,7 +10,7 @@ import java.awt.Color
 
 class MainWindow extends JFrame{
     private static final String SNIPER_STATUS_NAME = "sniper status"
-    private static final JLabel sniperStatus = createLabel(SniperStatus.STATUS_JOINING)
+    private final JLabel sniperStatus = createLabel(SniperStatus.STATUS_JOINING)
     MainWindow(){
         super("Auction Sniper")
         setName(Main.MAIN_WINDOW_NAME)

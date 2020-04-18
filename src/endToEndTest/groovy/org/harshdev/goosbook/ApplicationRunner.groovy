@@ -3,7 +3,8 @@ package org.harshdev.goosbook
 class ApplicationRunner {
     private static final String SNIPER_ID = "sniper"
     private static final String SNIPER_PASSWORD = "sniper"
-    public static final String XMPP_HOSTNAME = "localhost"
+    static final String XMPP_HOSTNAME = "localhost"
+    static String SNIPER_XMPP_ID = "sniper@harshdev.com/auction"
     private AuctionSniperDriver driver
 
 
@@ -12,7 +13,7 @@ class ApplicationRunner {
 
         Thread thread = new Thread("Test Application") {
             @Override
-            public void run() {
+            void run() {
                 try {
                     Main.main(ApplicationRunner.this.XMPP_HOSTNAME, SNIPER_ID, SNIPER_PASSWORD, auction.getItemId())
                 } catch (Exception ex) {
@@ -35,5 +36,9 @@ class ApplicationRunner {
             driver.dispose()
         }
         Main.stop()
+    }
+
+    void hasShownSniperIsBidding() {
+        driver.showSniperStatus(SniperStatus.STATUS_BIDDING)
     }
 }

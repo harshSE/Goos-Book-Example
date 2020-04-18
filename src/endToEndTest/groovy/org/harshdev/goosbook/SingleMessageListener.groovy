@@ -1,14 +1,11 @@
 package org.harshdev.goosbook
 
+
 import org.jivesoftware.smack.chat2.Chat
-import org.jivesoftware.smack.chat2.ChatManager
 import org.jivesoftware.smack.packet.Message
-import org.junit.jupiter.api.Assertions
 
 import java.util.concurrent.ArrayBlockingQueue
 import java.util.concurrent.TimeUnit
-
-import static org.junit.jupiter.api.Assertions.assertNotNull
 
 class SingleMessageListener {
 
@@ -18,10 +15,9 @@ class SingleMessageListener {
         messages << message
     }
 
-    void receiveAMessage() throws InterruptedException {
-        assertNotNull(messages.poll(5, TimeUnit.SECONDS), "Message")
+
+    Message message() {
+        def message = messages.poll(5, TimeUnit.SECONDS)
+        message
     }
-
-
-
 }

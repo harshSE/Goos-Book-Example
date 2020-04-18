@@ -1,5 +1,6 @@
 package org.harshdev.goosbook
 
+
 import spock.lang.Specification
 
 class AuctionSniperEndToEndTest extends Specification {
@@ -12,12 +13,30 @@ class AuctionSniperEndToEndTest extends Specification {
         when:
         auction.startSellingItem()
         application.startBiddingIn(auction)
-        auction.hasReceivedJoinRequestFromSniper()
+        auction.hasReceivedJoinRequestFromSniper(ApplicationRunner.SNIPER_XMPP_ID)
         auction.announceClosed()
-
 
         then:
         application.showSniperHasLostAuction();
+
+
+    }
+
+    def "sniper makes a higher bid but loses"() {
+        when:
+        auction.startSellingItem()
+        application.startBiddingIn(auction)
+        auction.hasReceivedJoinRequestFromSniper(ApplicationRunner.SNIPER_XMPP_ID)
+        auction.reportPrice(1000, 98, "other bidder")
+
+        application.hasShownSniperIsBidding()
+
+        auction.hasReceivedBid(1098, ApplicationRunner.SNIPER_XMPP_ID)
+
+        auction.announceClosed()
+
+        then:
+        application.showSniperHasLostAuction()
 
     }
 

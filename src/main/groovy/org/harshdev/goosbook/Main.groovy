@@ -17,7 +17,7 @@ import javax.swing.*
 
 import static org.jivesoftware.smack.chat2.ChatManager.getInstanceFor
 
-class Main {
+class Main implements AuctionEventListener {
 
     private static final int ARGS_HOSTNAME = 0
     private static final int ARGS_USERNAME = 1
@@ -25,9 +25,12 @@ class Main {
     private static final int ARGS_ITEM_ID = 3
     private static String AUCTION_RESOURCE = "auction"
     static final String MAIN_WINDOW_NAME = ""
+    static final String JOIN_COMMAND = "SOLVersion: 1.1; Command: JOIN;"
+    static final def BID_FOR_PRICE_OF = { int price -> "Command: BID; Price: ${price};" }
     private MainWindow ui
     static private XMPPTCPConnection connection
-    private Chat notTobeGCd
+    private Chat chat
+    private static Main main
 
 
     Main() throws Exception {
@@ -35,7 +38,7 @@ class Main {
     }
 
     static void main(String[] args) {
-        def main = new Main();
+        main = new Main();
 
         Main.connection = connection(args)
 
@@ -63,23 +66,36 @@ class Main {
         chatManager.addIncomingListener(new IncomingChatMessageListener() {
             @Override
             void newIncomingMessage(EntityBareJid from, Message message, Chat c) {
-                println "Incoming message ${message}"
-                SwingUtilities.invokeAndWait(() -> ui.showStatus(SniperStatus.STATUS_LOST))
+                println "Incoming message ${message.getBody()}"
+                new AuctionMessageTranslator(Main.this).processMessage(message)
             }
         })
-        this.notTobeGCd = chat
-        
-        chat.send("hello")
+        this.chat = chat
+
+        chat.send(JOIN_COMMAND)
     }
 
     static void stop() {
-        if(Objects.nonNull(connection)) {
+        if (Objects.nonNull(connection)) {
             connection.disconnect()
         }
+
+        main.ui.dispose()
     }
 
     private void startUserInterface() throws Exception {
         SwingUtilities.invokeAndWait(() -> ui = new MainWindow())
 
+    }
+
+    @Override
+    void auctionClosed() {
+        SwingUtilities.invokeAndWait(() -> ui.showStatus(SniperStatus.STATUS_LOST))
+    }
+
+    @Override
+    void currentPrice(int integer1, int integer2) {
+        SwingUtilities.invokeAndWait(() -> ui.showStatus(SniperStatus.STATUS_BIDDING))
+        chat.send(BID_FOR_PRICE_OF(1098))
     }
 }
