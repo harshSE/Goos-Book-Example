@@ -17,20 +17,19 @@ import javax.swing.*
 
 import static org.jivesoftware.smack.chat2.ChatManager.getInstanceFor
 
-class Main implements AuctionEventListener {
+class Main {
 
     private static final int ARGS_HOSTNAME = 0
     private static final int ARGS_USERNAME = 1
     private static final int ARGS_PASSWORD = 2
     private static final int ARGS_ITEM_ID = 3
-    private static String AUCTION_RESOURCE = "auction"
+    private static final String AUCTION_RESOURCE = "auction"
     static final String MAIN_WINDOW_NAME = ""
-    static final String JOIN_COMMAND = "SOLVersion: 1.1; Command: JOIN;"
-    static final def BID_FOR_PRICE_OF = { int price -> "Command: BID; Price: ${price};" }
-    private MainWindow ui
-    static private XMPPTCPConnection connection
-    private Chat chat
+
+    private static  XMPPTCPConnection connection
     private static Main main
+
+    private MainWindow ui
 
 
     Main() throws Exception {
@@ -40,13 +39,13 @@ class Main implements AuctionEventListener {
     static void main(String[] args) {
         main = new Main();
 
-        Main.connection = connection(args)
+        connection(args)
 
         main.joinAuction(connection, args[ARGS_ITEM_ID])
 
     }
 
-    private static XMPPTCPConnection connection(String[] args) {
+    private static void connection(String[] args) {
         XMPPTCPConnectionConfiguration configuration = XMPPTCPConnectionConfiguration.builder()
                 .setUsernameAndPassword(args[ARGS_USERNAME], args[ARGS_PASSWORD])
                 .setResource(AUCTION_RESOURCE)
@@ -54,25 +53,41 @@ class Main implements AuctionEventListener {
                 .setHost(args[ARGS_HOSTNAME])
                 .build();
         connection = new XMPPTCPConnection(configuration)
-        connection
     }
 
     private void joinAuction(XMPPTCPConnection connection, String itemId) {
-        connection.connect().login()
+        login(connection)
 
         ChatManager chatManager = getInstanceFor(connection);
-        def jid = "auction-${itemId}@${connection.getXMPPServiceDomain()}/${AUCTION_RESOURCE}"
-        Chat chat = chatManager.chatWith(JidCreate.entityBareFrom(jid))
-        chatManager.addIncomingListener(new IncomingChatMessageListener() {
-            @Override
-            void newIncomingMessage(EntityBareJid from, Message message, Chat c) {
-                println "Incoming message ${message.getBody()}"
-                new AuctionMessageTranslator(Main.this).processMessage(message)
-            }
-        })
-        this.chat = chat
 
-        chat.send(JOIN_COMMAND)
+        String jid = createAuctionIdForXmpp(itemId, connection)
+
+        Chat chat = chatManager.chatWith(JidCreate.entityBareFrom(jid))
+
+        Auction auction = new XMPPAuction(chat)
+
+        addListener(chatManager, auction)
+
+        auction.join()
+    }
+
+    private login(XMPPTCPConnection connection) {
+        connection.connect().login()
+    }
+
+    private GString createAuctionIdForXmpp(String itemId, XMPPTCPConnection connection) {
+        "auction-${itemId}@${connection.getXMPPServiceDomain()}/${AUCTION_RESOURCE}"
+    }
+
+    private boolean addListener(ChatManager chatManager, Auction auction) {
+        IncomingChatMessageListener listener = new IncomingChatMessageListener() {
+            @Override
+            void newIncomingMessage(EntityBareJid from, Message message, Chat chat) {
+                AuctionMessageTranslator translator = new AuctionMessageTranslator(new AuctionSniper(new SniperStateDisplayer(), auction))
+                translator.processMessage(message)
+            }
+        }
+        chatManager.addIncomingListener(listener)
     }
 
     static void stop() {
@@ -88,14 +103,42 @@ class Main implements AuctionEventListener {
 
     }
 
-    @Override
-    void auctionClosed() {
-        SwingUtilities.invokeAndWait(() -> ui.showStatus(SniperStatus.STATUS_LOST))
+    static class XMPPAuction implements Auction {
+
+        private static final String JOIN_COMMAND = "SOLVersion: 1.1; Command: JOIN;"
+        private static final def BID_FOR_PRICE_OF = { int price -> "Command: BID; Price: ${price};" }
+        private Chat chat;
+
+
+        XMPPAuction(Chat chat) {
+            this.chat = chat;
+        }
+
+        @Override
+        void bid(int price) {
+            chat.send(BID_FOR_PRICE_OF(price))
+        }
+
+        @Override
+        void join() {
+            chat.send(JOIN_COMMAND)
+        }
     }
 
-    @Override
-    void currentPrice(int integer1, int integer2) {
-        SwingUtilities.invokeAndWait(() -> ui.showStatus(SniperStatus.STATUS_BIDDING))
-        chat.send(BID_FOR_PRICE_OF(1098))
+    class SniperStateDisplayer implements SniperListener {
+
+        @Override
+        void sniperLost() {
+            showStatus(SniperStatus.STATUS_LOST)
+        }
+
+        private showStatus(SniperStatus status) {
+            SwingUtilities.invokeAndWait(() -> ui.showStatus(status))
+        }
+
+        @Override
+        void bidding() {
+            showStatus(SniperStatus.STATUS_BIDDING)
+        }
     }
 }
