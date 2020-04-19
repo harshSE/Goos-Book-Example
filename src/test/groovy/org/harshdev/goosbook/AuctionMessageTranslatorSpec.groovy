@@ -17,7 +17,7 @@ class AuctionMessageTranslatorSpec  extends Specification{
 
     def "notify auction closed when closed message received"() {
         given:
-        String closeEvent = "SOLVersion: 1.1; Event: CLOSED;";
+        String closeEvent = "SOLVersion: 1.1; Event: CLOSE;";
 
         Message message = new Message();
         message.setBody(closeEvent);

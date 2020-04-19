@@ -11,22 +11,50 @@ class AuctionMessageTranslator {
     }
 
     void processMessage(Message message) {
-        def map = toMap(message.getBody())
+        AuctionEvent auctionEvent = AuctionEvent.from(message)
 
-        if("Price".equalsIgnoreCase(map.get("Event"))) {
-            listener.currentPrice(map.get("CurrentPrice") as Integer, map.get("Increment") as Integer)
-        } else {
+        if(auctionEvent.isPriceEvent()) {
+            listener.currentPrice(auctionEvent.currentPrice(), auctionEvent.increment())
+        } else if(auctionEvent.isCloseEvent()){
             listener.auctionClosed()
         }
-
     }
 
-    private Map<String, String> toMap(String message) {
-        Map<String, String> map = [:]
-        message.split(";").each {
-            def values = it.split(':')
-            map[values[0].trim()] = values[1].trim()
+    private static class AuctionEvent {
+
+        private final Map<String, String> fields
+
+        AuctionEvent(Map<String, String> fields) {
+            this.fields = fields
         }
-        map
+
+        int currentPrice() {
+            fields.get("CurrentPrice") as Integer
+        }
+
+        int increment() {
+            fields.get("Increment") as Integer
+        }
+
+        String event() {
+            fields.get("Event")
+        }
+
+        boolean isPriceEvent() {
+            "Price".equalsIgnoreCase(event())
+        }
+
+        static AuctionEvent from(Message message) {
+            Map<String, String> map = [:]
+            message.getBody().split(";").each {
+                String [] values = it.split(':')
+                map[values[0].trim()] = values[1].trim()
+            }
+            new AuctionEvent(map)
+        }
+
+        boolean isCloseEvent() {
+            "CLOSE".equalsIgnoreCase(event())
+        }
     }
 }
