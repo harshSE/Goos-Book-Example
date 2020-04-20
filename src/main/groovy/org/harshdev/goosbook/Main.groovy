@@ -80,10 +80,13 @@ class Main {
     }
 
     private boolean addListener(ChatManager chatManager, Auction auction) {
+        AuctionSniper sniper = new AuctionSniper(new SniperStateDisplayer(), auction)
+
         IncomingChatMessageListener listener = new IncomingChatMessageListener() {
             @Override
             void newIncomingMessage(EntityBareJid from, Message message, Chat chat) {
-                AuctionMessageTranslator translator = new AuctionMessageTranslator(new AuctionSniper(new SniperStateDisplayer(), auction))
+                String user = connection.getUser().toString()
+                AuctionMessageTranslator translator = new AuctionMessageTranslator(user, sniper)
                 translator.processMessage(message)
             }
         }
@@ -139,6 +142,16 @@ class Main {
         @Override
         void bidding() {
             showStatus(SniperStatus.STATUS_BIDDING)
+        }
+
+        @Override
+        void winning() {
+            showStatus(SniperStatus.STATUS_WINNING)
+        }
+
+        @Override
+        void sniperWon() {
+            showStatus(SniperStatus.STATUS_WIN)
         }
     }
 }
