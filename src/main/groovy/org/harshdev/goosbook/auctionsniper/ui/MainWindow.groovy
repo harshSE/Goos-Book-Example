@@ -1,34 +1,43 @@
 package org.harshdev.goosbook.auctionsniper.ui
 
+import org.harshdev.goosbook.SniperSnapShot
 import org.harshdev.goosbook.Main
-import org.harshdev.goosbook.SniperStatus
+import org.harshdev.goosbook.SniperState
 
-import javax.swing.JFrame
-import javax.swing.JLabel
-import javax.swing.border.LineBorder
-import java.awt.Color
+import javax.swing.*
+import java.awt.*
 
 class MainWindow extends JFrame{
-    private static final String SNIPER_STATUS_NAME = "sniper status"
-    private final JLabel sniperStatus = createLabel(SniperStatus.STATUS_JOINING)
-    MainWindow(){
-        super("Auction Sniper")
+
+    static String APPLICATION_TITLE = "Auction Sniper"
+    private final SniperTableModel snipers
+    private String SNIPER_TABLE_NAME = "sniper status"
+
+
+    MainWindow(SniperTableModel snipers){
+        super(APPLICATION_TITLE)
+        this.snipers = snipers
         setName(Main.MAIN_WINDOW_NAME)
-        add(sniperStatus)
+        fillContentPane(makeSniperTable())
         pack()
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE)
         setVisible(true)
     }
 
 
-    private static JLabel createLabel(SniperStatus initialTest) {
-        JLabel result =  new JLabel(initialTest.name)
-        result.setName(SNIPER_STATUS_NAME)
-        result.setBorder(new LineBorder(Color.BLACK))
-        return result
+    private JTable makeSniperTable() {
+        final JTable table = new JTable(snipers)
+        table.setName(SNIPER_TABLE_NAME)
+        table
     }
 
-    void showStatus(SniperStatus status) {
-        sniperStatus.setText(status.name);
+    private void fillContentPane(JTable sniperTable) {
+        Container pane = getContentPane();
+        pane.setLayout(new BorderLayout())
+        pane.add(new JScrollPane(sniperTable), BorderLayout.CENTER)
+    }
+
+    void sniperStatusChange(SniperSnapShot auctionState) {
+        snipers.sniperStateChanged(auctionState)
     }
 }
