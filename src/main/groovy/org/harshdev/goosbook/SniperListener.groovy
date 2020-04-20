@@ -1,10 +1,6 @@
 package org.harshdev.goosbook
 
-interface SniperListener extends EventListener {
-    void sniperLost()
-    void bidding()
+interface SniperListener {
 
-    void winning()
-
-    void sniperWon()
+    void sniperStateChanged(SniperSnapShot snapShot)
 }

@@ -4,6 +4,7 @@
 package org.harshdev.goosbook
 
 import org.harshdev.goosbook.auctionsniper.ui.MainWindow
+import org.harshdev.goosbook.auctionsniper.ui.SniperTableModel
 import org.jivesoftware.smack.chat2.Chat
 import org.jivesoftware.smack.chat2.ChatManager
 import org.jivesoftware.smack.chat2.IncomingChatMessageListener
@@ -30,14 +31,16 @@ class Main {
     private static Main main
 
     private MainWindow ui
+    private final SniperTableModel sniperTableModel = new SniperTableModel()
 
 
-    Main() throws Exception {
+    Main(String item) throws Exception {
+        sniperTableModel = new SniperTableModel(item)
         startUserInterface()
     }
 
     static void main(String[] args) {
-        main = new Main();
+        main = new Main(args[ARGS_ITEM_ID]);
 
         connection(args)
 
@@ -66,7 +69,7 @@ class Main {
 
         Auction auction = new XMPPAuction(chat)
 
-        addListener(chatManager, auction)
+        addListener(itemId, chatManager, auction)
 
         auction.join()
     }
@@ -79,8 +82,8 @@ class Main {
         "auction-${itemId}@${connection.getXMPPServiceDomain()}/${AUCTION_RESOURCE}"
     }
 
-    private boolean addListener(ChatManager chatManager, Auction auction) {
-        AuctionSniper sniper = new AuctionSniper(new SniperStateDisplayer(), auction)
+    private boolean addListener(String item, ChatManager chatManager, Auction auction) {
+        AuctionSniper sniper = new AuctionSniper(item,new SwingThreadSniperListener(), auction)
 
         IncomingChatMessageListener listener = new IncomingChatMessageListener() {
             @Override
@@ -102,7 +105,7 @@ class Main {
     }
 
     private void startUserInterface() throws Exception {
-        SwingUtilities.invokeAndWait(() -> ui = new MainWindow())
+        SwingUtilities.invokeAndWait(() -> ui = new MainWindow(sniperTableModel))
 
     }
 
@@ -128,30 +131,10 @@ class Main {
         }
     }
 
-    class SniperStateDisplayer implements SniperListener {
-
+    class SwingThreadSniperListener implements SniperListener {
         @Override
-        void sniperLost() {
-            showStatus(SniperStatus.STATUS_LOST)
-        }
-
-        private showStatus(SniperStatus status) {
-            SwingUtilities.invokeAndWait(() -> ui.showStatus(status))
-        }
-
-        @Override
-        void bidding() {
-            showStatus(SniperStatus.STATUS_BIDDING)
-        }
-
-        @Override
-        void winning() {
-            showStatus(SniperStatus.STATUS_WINNING)
-        }
-
-        @Override
-        void sniperWon() {
-            showStatus(SniperStatus.STATUS_WIN)
+        void sniperStateChanged(SniperSnapShot snapShot) {
+            SwingUtilities.invokeAndWait(() -> ui.sniperStatusChange(snapShot))
         }
     }
 }
