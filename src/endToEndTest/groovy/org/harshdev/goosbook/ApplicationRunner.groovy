@@ -41,4 +41,12 @@ class ApplicationRunner {
     void hasShownSniperIsBidding() {
         driver.showSniperStatus(SniperStatus.STATUS_BIDDING)
     }
+
+    void hasShownSniperIsWinning() {
+        driver.showSniperStatus(SniperStatus.STATUS_WINNING)
+    }
+
+    void showsSnipeHasWonTheAuction() {
+        driver.showSniperStatus(SniperStatus.STATUS_WIN)
+    }
 }

@@ -5,8 +5,10 @@ import org.jivesoftware.smack.packet.Message;
 class AuctionMessageTranslator {
 
     private final AuctionEventListener listener
+    private final String sniperId
 
-    AuctionMessageTranslator(AuctionEventListener listener) {
+    AuctionMessageTranslator(String sniperId, AuctionEventListener listener) {
+        this.sniperId = sniperId
         this.listener = listener
     }
 
@@ -14,7 +16,7 @@ class AuctionMessageTranslator {
         AuctionEvent auctionEvent = AuctionEvent.from(message)
 
         if(auctionEvent.isPriceEvent()) {
-            listener.currentPrice(auctionEvent.currentPrice(), auctionEvent.increment())
+            listener.currentPrice(auctionEvent.currentPrice(), auctionEvent.increment(), auctionEvent.isFrom(sniperId))
         } else if(auctionEvent.isCloseEvent()){
             listener.auctionClosed()
         }
@@ -55,6 +57,18 @@ class AuctionMessageTranslator {
 
         boolean isCloseEvent() {
             "CLOSE".equalsIgnoreCase(event())
+        }
+
+        String getBidder() {
+            fields.get("Bidder")
+        }
+
+        AuctionEventListener.PriceSource isFrom(String sniperId) {
+            if(sniperId.equalsIgnoreCase(getBidder())) {
+                AuctionEventListener.PriceSource.FromSniper
+            } else {
+                AuctionEventListener.PriceSource.FromOtherBidder
+            }
         }
     }
 }

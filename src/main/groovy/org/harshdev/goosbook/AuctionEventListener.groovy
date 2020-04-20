@@ -1,6 +1,10 @@
 package org.harshdev.goosbook;
 
 interface AuctionEventListener {
+    enum PriceSource {
+        FromSniper,
+        FromOtherBidder
+    }
     void auctionClosed()
-    void currentPrice(int integer1, int integer2)
+    void currentPrice(int price, int increment, PriceSource priceSource);
 }
