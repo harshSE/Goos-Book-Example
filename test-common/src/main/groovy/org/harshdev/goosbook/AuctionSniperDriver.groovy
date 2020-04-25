@@ -1,12 +1,10 @@
 package org.harshdev.goosbook
 
 import com.objogate.wl.swing.AWTEventQueueProber
-import com.objogate.wl.swing.driver.ComponentDriver
-import com.objogate.wl.swing.driver.JFrameDriver
-import com.objogate.wl.swing.driver.JTableDriver
-import com.objogate.wl.swing.driver.JTableHeaderDriver
+import com.objogate.wl.swing.driver.*
 import com.objogate.wl.swing.gesture.GesturePerformer
 
+import javax.swing.*
 import javax.swing.table.JTableHeader
 
 import static com.objogate.wl.swing.matcher.IterableComponentsMatcher.matching
@@ -16,17 +14,16 @@ import static org.hamcrest.Matchers.equalTo
 
 class AuctionSniperDriver extends JFrameDriver{
 
+    private static final String NEW_ITEM_ID_NAME = "New Auction Item"
+    private static final String JOIN_BUTTON_NAME = "Join Auction Btn"
+    private static final String MAIN_WINDOW_NAME = ""
+
     AuctionSniperDriver(int timeout) {
         super(new GesturePerformer(),
                 JFrameDriver.topLevelFrame(
-                        ComponentDriver.named(Main.MAIN_WINDOW_NAME),
+                        ComponentDriver.named(MAIN_WINDOW_NAME),
                         showingOnScreen()),
                 new AWTEventQueueProber(timeout, 100))
-    }
-
-    @Deprecated
-    void showSniperStatus(String status) {
-        new JTableDriver(this).hasCell(withLabelText(equalTo(status)))
     }
 
     void showSniperStatus(String item, int lastPrice, int lastBid, String status) {
@@ -46,4 +43,22 @@ class AuctionSniperDriver extends JFrameDriver{
                     withLabelText("State")))
 
     }
+
+    void statBiddingIn(String item) {
+        itemField().replaceAllText(item)
+        bidButton().click()
+    }
+
+    private JTextFieldDriver itemField() {
+        JTextFieldDriver newItemField = new JTextFieldDriver(this, JTextField.class, named(NEW_ITEM_ID_NAME))
+        newItemField.focusWithMouse()
+        newItemField
+
+    }
+
+    private JButtonDriver bidButton() {
+        new JButtonDriver(this, JButton.class, named(JOIN_BUTTON_NAME))
+    }
+
+
 }

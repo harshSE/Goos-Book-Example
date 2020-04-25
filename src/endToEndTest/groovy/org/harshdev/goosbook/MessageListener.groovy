@@ -7,7 +7,7 @@ import org.jivesoftware.smack.packet.Message
 import java.util.concurrent.ArrayBlockingQueue
 import java.util.concurrent.TimeUnit
 
-class SingleMessageListener {
+class MessageListener {
 
     private ArrayBlockingQueue<Message> messages = new ArrayBlockingQueue<>(1);
 

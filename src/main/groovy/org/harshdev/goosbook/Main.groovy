@@ -5,6 +5,7 @@ package org.harshdev.goosbook
 
 import org.harshdev.goosbook.auctionsniper.ui.MainWindow
 import org.harshdev.goosbook.auctionsniper.ui.SniperTableModel
+import org.harshdev.goosbook.auctionsniper.ui.UserEventListener
 import org.jivesoftware.smack.chat2.Chat
 import org.jivesoftware.smack.chat2.ChatManager
 import org.jivesoftware.smack.chat2.IncomingChatMessageListener
@@ -31,16 +32,15 @@ class Main {
     private static Main main
 
     private MainWindow ui
-    private final SniperTableModel sniperTableModel = new SniperTableModel()
+    private ChatManager chatManager
 
 
-    Main(String item) throws Exception {
-        sniperTableModel = new SniperTableModel(item)
+    Main() throws Exception {
         startUserInterface()
     }
 
     static void main(String[] args) {
-        main = new Main(args[ARGS_ITEM_ID]);
+        main = new Main();
 
         connection(args)
 
@@ -61,15 +61,18 @@ class Main {
     private void joinAuction(XMPPTCPConnection connection, String itemId) {
         login(connection)
 
-        ChatManager chatManager = getInstanceFor(connection);
+        chatManager = getInstanceFor(connection)
 
-        String jid = createAuctionIdForXmpp(itemId, connection)
+    }
 
-        Chat chat = chatManager.chatWith(JidCreate.entityBareFrom(jid))
+    private void joinAuction(String item) {
+        String jid = createAuctionIdForXmpp(item, connection)
+
+        Chat chat = this.chatManager.chatWith(JidCreate.entityBareFrom(jid))
 
         Auction auction = new XMPPAuction(chat)
 
-        addListener(itemId, chatManager, auction)
+        addListener(item, this.chatManager, auction, chat)
 
         auction.join()
     }
@@ -82,17 +85,16 @@ class Main {
         "auction-${itemId}@${connection.getXMPPServiceDomain()}/${AUCTION_RESOURCE}"
     }
 
-    private boolean addListener(String item, ChatManager chatManager, Auction auction) {
-        AuctionSniper sniper = new AuctionSniper(item,new SwingThreadSniperListener(), auction)
+    private boolean addListener(String item, ChatManager chatManager, Auction auction, Chat chat) {
+        SwingThreadSniperListener sniperListener = new SwingThreadSniperListener()
+        AuctionSniper sniper = new AuctionSniper(item, sniperListener, auction)
+        String user = connection.getUser().toString()
+        AuctionMessageTranslator translator = new AuctionMessageTranslator(user, sniper)
 
-        IncomingChatMessageListener listener = new IncomingChatMessageListener() {
-            @Override
-            void newIncomingMessage(EntityBareJid from, Message message, Chat chat) {
-                String user = connection.getUser().toString()
-                AuctionMessageTranslator translator = new AuctionMessageTranslator(user, sniper)
-                translator.processMessage(message)
-            }
-        }
+        sniperListener.sniperStateChanged(SniperSnapShot.joining(item))
+
+        //FIXME adding lister for each auction will cause memory leak as message listener never release even though chat ended i.e auction closed.
+        IncomingChatMessageListener listener = new XMPPMessageIncomingMessageListener(translator, chat)
         chatManager.addIncomingListener(listener)
     }
 
@@ -105,8 +107,33 @@ class Main {
     }
 
     private void startUserInterface() throws Exception {
-        SwingUtilities.invokeAndWait(() -> ui = new MainWindow(sniperTableModel))
+        SwingUtilities.invokeAndWait(() -> ui = new MainWindow(new SniperTableModel(), new UserEventListener() {
+            @Override
+            void joinAuction(String item) {
+                new Thread(() -> Main.this.joinAuction(item)).start()
+            }
+        }))
+    }
 
+
+    static class XMPPMessageIncomingMessageListener implements IncomingChatMessageListener{
+
+        private AuctionMessageTranslator translator
+        private Chat chat
+
+        XMPPMessageIncomingMessageListener(AuctionMessageTranslator translator, Chat chat) {
+            this.translator = translator
+            this.chat = chat
+        }
+
+        @Override
+        void newIncomingMessage(EntityBareJid from, Message message, Chat chat) {
+            if(this.chat != chat) {
+                return
+            }
+
+            this.translator.processMessage(message)
+        }
     }
 
     static class XMPPAuction implements Auction {

@@ -1,12 +1,11 @@
 package org.harshdev.goosbook.auctionsniper.ui
 
+
 import org.harshdev.goosbook.SniperListener
 import org.harshdev.goosbook.SniperSnapShot
 import org.harshdev.goosbook.SniperState
 
 import javax.swing.table.AbstractTableModel
-
-import static org.harshdev.goosbook.SniperState.JOINING
 
 class SniperTableModel extends AbstractTableModel implements SniperListener{
     private final static Map<SniperState, String> STATUS_TEXT = [(SniperState.JOINING): "Joining",
@@ -14,11 +13,14 @@ class SniperTableModel extends AbstractTableModel implements SniperListener{
                                                                  (SniperState.WINNING): "Winning",
                                                                  (SniperState.LOST): "Lost",
                                                                  (SniperState.WON): "Won"]
-    private SniperSnapShot snapShot;
+    private HashMap<String,Integer> itemToSnapShot;
+    private List<SniperSnapShot> snapShots
 
-    SniperTableModel(String item) {
-        snapShot = SniperSnapShot.joining(item)
+    SniperTableModel() {
+        itemToSnapShot = [:]
+        snapShots = []
     }
+
 
     @Override
     int getColumnCount() {
@@ -32,11 +34,12 @@ class SniperTableModel extends AbstractTableModel implements SniperListener{
 
     @Override
     int getRowCount() {
-        return 1
+        return snapShots.size()
     }
 
     @Override
     Object getValueAt(int rowIndex, int columnIndex) {
+        SniperSnapShot snapShot = snapShots[rowIndex]
         Column column = Column.at(columnIndex);
         column.valueIn(snapShot)
     }
@@ -46,8 +49,27 @@ class SniperTableModel extends AbstractTableModel implements SniperListener{
     }
 
     @Override
-    void sniperStateChanged(SniperSnapShot snapShot) {
-        this.snapShot = snapShot
-        fireTableRowsUpdated(0,0)
+    synchronized void sniperStateChanged(SniperSnapShot snapShot) {
+
+        Integer index = itemToSnapShot[snapShot.getItem()]
+        if(index == null) {
+            addNewRow(snapShot)
+        } else {
+            updateRow(index, snapShot)
+        }
     }
+
+    private void updateRow(int index, SniperSnapShot snapShot) {
+        snapShots.set(index, snapShot)
+        fireTableRowsUpdated(index, index)
+    }
+
+    private void addNewRow(SniperSnapShot snapShot) {
+        int index
+        snapShots.add(snapShot)
+        index = snapShots.size() - 1
+        itemToSnapShot[snapShot.getItem()] = index;
+        fireTableRowsInserted(index, index)
+    }
+
 }

@@ -8,3 +8,5 @@
  */
 
 rootProject.name = 'goos-book-example'
+
+include 'test-common'
