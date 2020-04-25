@@ -2,23 +2,35 @@ package org.harshdev.goosbook
 
 import org.harshdev.goosbook.auctionsniper.ui.MainWindow
 
+import java.util.stream.Collectors
+
 class ApplicationRunner {
     private static final String SNIPER_ID = "sniper"
     private static final String SNIPER_PASSWORD = "sniper"
     static final String XMPP_HOSTNAME = "localhost"
     static String SNIPER_XMPP_ID = "sniper@harshdev.com/auction"
     private AuctionSniperDriver driver
-    private String item
 
 
-    void startBiddingIn(FakeAuctionServer auction) {
-        this.item = auction.getItemId()
+    void startBiddingIn(FakeAuctionServer... auctions) {
 
+        driver = startSniper(auctions)
+        for(auction in auctions) {
+            String item = auction.getItemId()
+            Thread.sleep(100)
+            driver.statBiddingIn(item)
+            driver.showSniperStatus(auction.getItemId(), 0,0,"Joining")
+        }
+
+    }
+
+    private AuctionSniperDriver startSniper(FakeAuctionServer... auctions) {
+        String items = Arrays.stream(auctions).map(FakeAuctionServer::getItemId).collect(Collectors.joining(","))
         Thread thread = new Thread("Test Application") {
             @Override
             void run() {
                 try {
-                    Main.main(ApplicationRunner.this.XMPP_HOSTNAME, SNIPER_ID, SNIPER_PASSWORD, auction.getItemId())
+                    Main.main(ApplicationRunner.this.XMPP_HOSTNAME, SNIPER_ID, SNIPER_PASSWORD, items)
                 } catch (Exception ex) {
                     ex.printStackTrace()
                 }
@@ -29,11 +41,7 @@ class ApplicationRunner {
         driver = new AuctionSniperDriver(1000)
         driver.hasTitle(MainWindow.APPLICATION_TITLE)
         driver.hasColumnTitles()
-        driver.showSniperStatus("Joining")
-    }
-
-    void showSniperHasLostAuction() {
-        driver.showSniperStatus("Lost")
+        driver
     }
 
     void stop() {
@@ -43,30 +51,19 @@ class ApplicationRunner {
         Main.stop()
     }
 
-    @Deprecated
-    void hasShownSniperIsBidding() {
-        driver.showSniperStatus("Bidding")
+    void hasShownSniperIsBidding(FakeAuctionServer auction, int lastPrice, int lastBid) {
+        driver.showSniperStatus(auction.getItemId(),lastPrice, lastBid, "Bidding")
     }
 
-    void hasShownSniperIsBidding(int lastPrice, int lastBid) {
-        driver.showSniperStatus(item,lastPrice, lastBid, "Bidding")
+    void showSniperHasLostAuction(FakeAuctionServer auction, int lastPrice, int lastBid) {
+        driver.showSniperStatus(auction.getItemId(), lastPrice,lastBid,"Lost")
     }
 
-    @Deprecated
-    void hasShownSniperIsWinning() {
-        driver.showSniperStatus("Winning")
+    void hasShownSniperIsWinning(FakeAuctionServer auction, int winningBid) {
+        driver.showSniperStatus(auction.getItemId(),winningBid, winningBid,"Winning")
     }
 
-    void hasShownSniperIsWinning(int winningBid) {
-        driver.showSniperStatus(item,winningBid, winningBid,"Winning")
-    }
-
-    @Deprecated
-    void showsSnipeHasWonTheAuction() {
-        driver.showSniperStatus("Won")
-    }
-
-    void showsSnipeHasWonTheAuction(int lastPrice) {
-        driver.showSniperStatus(item,lastPrice, lastPrice, "Won")
+    void showsSnipeHasWonTheAuction(FakeAuctionServer auction, int lastPrice) {
+        driver.showSniperStatus(auction.getItemId(),lastPrice, lastPrice, "Won")
     }
 }

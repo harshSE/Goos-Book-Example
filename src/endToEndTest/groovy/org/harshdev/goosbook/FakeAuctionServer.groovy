@@ -18,7 +18,7 @@ class FakeAuctionServer {
     private static final String AUCTION_RESOURCE = "auction"
     private static final String AUCTION_PASSWORD = "auction"
     private static final String ITEM_ID_AS_LOGIN = "auction-%s"
-    private final SingleMessageListener singleMessageListener = new SingleMessageListener();
+    private final MessageListener singleMessageListener = new MessageListener();
     private String itemId
     private XMPPTCPConnection connection
     private Chat currentChat;
@@ -67,7 +67,9 @@ class FakeAuctionServer {
     }
 
     void stop() {
-        connection.disconnect()
+        if(connection.isConnected()) {
+            connection.disconnect()
+        }
     }
 
     void reportPrice(int biddingPrice, int increment, String currentBidder) {

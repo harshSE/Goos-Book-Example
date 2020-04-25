@@ -19,11 +19,19 @@ sourceSets {
         compileClasspath += sourceSets.main.output
         runtimeClasspath += sourceSets.main.output
     }
+
+    integrationTest{
+        compileClasspath += sourceSets.main.output
+        runtimeClasspath += sourceSets.main.output
+    }
 }
 
 configurations {
     endToEndTestImplementation.extendsFrom implementation
     endToEndTestRuntimeOnly.extendsFrom runtimeOnly
+
+    integrationTestImplementation.extendsFrom implementation
+    integrationTestRuntimeOnly.extendsFrom runtimeOnly
 }
 
 test {
@@ -39,16 +47,28 @@ task endToEndTests(type: Test) {
 
 }
 
+task integrationTest(type: Test) {
+    testClassesDirs = sourceSets.integrationTest.output.classesDirs
+    classpath = sourceSets.integrationTest.runtimeClasspath
+
+    useJUnitPlatform()
+}
+
 check.dependsOn endToEndTests
+check.dependsOn integrationTest
 
 dependencies {
     // Use the latest Groovy version for building this library
-    implementation 'org.codehaus.groovy:groovy-all:3.0.2'
+    implementation 'org.codehaus.groovy:groovy-all:3.0.0'
     implementation('org.igniterealtime.smack:smack-tcp:4.3.4')
     implementation('org.igniterealtime.smack:smack-java7:4.3.4')
     implementation('org.igniterealtime.smack:smack-experimental:4.3.4')
     implementation('org.igniterealtime.smack:smack-im:4.3.4')
 
+
+    /**
+     * Unit testing libs
+     */
     testRuntimeOnly('org.junit.platform:junit-platform-launcher:1.6.1')
     testRuntimeOnly('org.junit.jupiter:junit-jupiter-engine:5.6.1')
     testRuntimeOnly('org.junit.vintage:junit-vintage-engine:5.6.1')
@@ -56,15 +76,33 @@ dependencies {
     testImplementation('org.spockframework:spock-core:2.0-M2-groovy-3.0')
     testImplementation('net.bytebuddy:byte-buddy:1.10.9')
 
+    /**
+     * Integration test libs
+     */
 
+    integrationTestImplementation project(':test-common')
+    integrationTestImplementation('org.junit.jupiter:junit-jupiter-api:5.6.1')
+    integrationTestImplementation('org.spockframework:spock-core:2.0-M2-groovy-3.0')
+    integrationTestImplementation('com.googlecode.windowlicker:windowlicker-swing:r268')
+    integrationTestImplementation('org.assertj:assertj-core:3.15.0')
+    integrationTestImplementation('net.bytebuddy:byte-buddy:1.10.9')
 
+    integrationTestRuntimeOnly('org.junit.platform:junit-platform-launcher:1.6.1')
+    integrationTestRuntimeOnly('org.junit.jupiter:junit-jupiter-engine:5.6.1')
+    integrationTestRuntimeOnly('org.junit.vintage:junit-vintage-engine:5.6.1')
+
+    /**
+     * End to End test libs
+     */
+
+    endToEndTestImplementation project(':test-common')
     endToEndTestImplementation('org.junit.jupiter:junit-jupiter-api:5.6.1')
     endToEndTestImplementation('org.spockframework:spock-core:2.0-M2-groovy-3.0')
-    endToEndTestImplementation('com.googlecode.windowlicker:windowlicker-swing:r268')
     endToEndTestImplementation('org.assertj:assertj-core:3.15.0')
-
-
+    endToEndTestImplementation('com.googlecode.windowlicker:windowlicker-swing:r268')
     endToEndTestRuntimeOnly('org.junit.platform:junit-platform-launcher:1.6.1')
     endToEndTestRuntimeOnly('org.junit.jupiter:junit-jupiter-engine:5.6.1')
     endToEndTestRuntimeOnly('org.junit.vintage:junit-vintage-engine:5.6.1')
+
+
 }
