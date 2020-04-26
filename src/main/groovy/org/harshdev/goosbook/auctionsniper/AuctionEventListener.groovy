@@ -1,6 +1,6 @@
-package org.harshdev.goosbook;
+package org.harshdev.goosbook.auctionsniper;
 
-interface AuctionEventListener {
+interface AuctionEventListener extends EventListener{
     enum PriceSource {
         FromSniper,
         FromOtherBidder

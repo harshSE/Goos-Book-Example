@@ -1,7 +1,9 @@
 package org.harshdev.goosbook.auctionsniper.ui
 
-import org.harshdev.goosbook.SniperSnapShot
-import org.harshdev.goosbook.SniperState
+
+import org.harshdev.goosbook.auctionsniper.AuctionSniper
+import org.harshdev.goosbook.auctionsniper.SniperSnapShot
+import org.harshdev.goosbook.auctionsniper.SniperState
 import spock.lang.Specification
 
 import javax.swing.event.TableModelListener
@@ -89,6 +91,23 @@ class SniperTableModelSpec extends Specification {
             model.getValueAt(2, Column.LAST_BID.ordinal()) == 500
             model.getValueAt(2, Column.SNIPER_STATE.ordinal()) == "Won"
         }
+    }
+
+    def "add sniper value when auction sniper added" () {
+        given:
+        SniperSnapShot joining = SniperSnapShot.joining("test-item")
+        AuctionSniper sniper = Mock()
+        sniper.getSnapShot() >> joining
+
+        when:
+        model.addSniper(sniper)
+
+        then:
+        model.size() == 1
+        model.getValueAt(0, Column.ITEM.ordinal()) == "test-item"
+        model.getValueAt(0, Column.LAST_PRICE.ordinal()) == 0
+        model.getValueAt(0, Column.LAST_BID.ordinal()) == 0
+        model.getValueAt(0, Column.SNIPER_STATE.ordinal()) == "Joining"
     }
 
     def "setsUpColumnHeadings" () {

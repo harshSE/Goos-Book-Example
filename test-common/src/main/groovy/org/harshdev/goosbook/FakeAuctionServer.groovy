@@ -13,11 +13,13 @@ import org.jxmpp.jid.EntityBareJid
 
 import static org.harshdev.goosbook.api.MessageAssert.assertThat
 import static org.jivesoftware.smack.chat2.ChatManager.getInstanceFor
+import static org.junit.jupiter.api.Assertions.assertNotNull
 
 class FakeAuctionServer {
     private static final String AUCTION_RESOURCE = "auction"
     private static final String AUCTION_PASSWORD = "auction"
     private static final String ITEM_ID_AS_LOGIN = "auction-%s"
+    private static final String XMPP_HOSTNAME = "localhost"
     private final MessageListener singleMessageListener = new MessageListener();
     private String itemId
     private XMPPTCPConnection connection
@@ -29,7 +31,7 @@ class FakeAuctionServer {
                 .setUsernameAndPassword(String.format(ITEM_ID_AS_LOGIN, itemId), AUCTION_PASSWORD)
                 .setResource(AUCTION_RESOURCE)
                 .setXmppDomain("harshdev.com")
-                .setHost(ApplicationRunner.XMPP_HOSTNAME)
+                .setHost(XMPP_HOSTNAME)
                 .build();
         this.connection = new XMPPTCPConnection(configuration)
     }
@@ -52,9 +54,10 @@ class FakeAuctionServer {
 
     void hasReceivedJoinRequestFromSniper(String bidder) {
         Message message = singleMessageListener.message()
+        assertNotNull(message, "Message not received")
         Assertions.assertAll(
-                {assertThat(message).from(bidder) } as Executable,
-                {assertThat(message).command("JOIN") } as Executable,
+                { assertThat(message).from(bidder) } as Executable,
+                { assertThat(message).command("JOIN") } as Executable,
         )
     }
 
@@ -80,9 +83,13 @@ class FakeAuctionServer {
     void hasReceivedBid(int biddingPrice, String bidder) {
         Message message = singleMessageListener.message()
         Assertions.assertAll(
-                {assertThat(message).from(bidder) } as Executable,
-                {assertThat(message).command("BID") } as Executable,
-                {assertThat(message).price(biddingPrice) } as Executable,
+                { assertThat(message).from(bidder) } as Executable,
+                { assertThat(message).command("BID") } as Executable,
+                { assertThat(message).price(biddingPrice) } as Executable,
         )
+    }
+
+    XMPPTCPConnection getConnection() {
+        connection
     }
 }

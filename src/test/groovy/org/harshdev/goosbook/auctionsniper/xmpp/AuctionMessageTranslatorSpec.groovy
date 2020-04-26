@@ -1,10 +1,12 @@
-package org.harshdev.goosbook
+package org.harshdev.goosbook.auctionsniper.xmpp
 
+import org.harshdev.goosbook.auctionsniper.AuctionEventListener
+import org.harshdev.goosbook.auctionsniper.xmpp.AuctionMessageTranslator
 import org.jivesoftware.smack.packet.Message
 import spock.lang.Specification
 
-import static org.harshdev.goosbook.AuctionEventListener.PriceSource.FromOtherBidder
-import static org.harshdev.goosbook.AuctionEventListener.PriceSource.FromSniper
+import static org.harshdev.goosbook.auctionsniper.AuctionEventListener.PriceSource.FromOtherBidder
+import static org.harshdev.goosbook.auctionsniper.AuctionEventListener.PriceSource.FromSniper
 
 
 class AuctionMessageTranslatorSpec  extends Specification{

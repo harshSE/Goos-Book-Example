@@ -6,6 +6,7 @@ import org.jivesoftware.smack.packet.Message;
 class MessageAssert extends AbstractAssert<MessageAssert, Message>{
 
     private Map<String, String> keyToValues;
+
     MessageAssert(Message message) {
         super(message, MessageAssert.class)
 

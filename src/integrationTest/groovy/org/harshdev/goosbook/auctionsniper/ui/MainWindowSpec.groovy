@@ -1,11 +1,8 @@
-package org.harshdev.goosbook.ui
+package org.harshdev.goosbook.auctionsniper.ui
 
 import com.objogate.wl.swing.probe.ValueMatcherProbe
-import org.hamcrest.Matchers
 import org.harshdev.goosbook.AuctionSniperDriver
-import org.harshdev.goosbook.auctionsniper.ui.MainWindow
-import org.harshdev.goosbook.auctionsniper.ui.SniperTableModel
-import org.harshdev.goosbook.auctionsniper.ui.UserEventListener
+import org.harshdev.goosbook.auctionsniper.SniperPortfolio
 import spock.lang.Specification
 
 import static org.hamcrest.Matchers.equalTo
@@ -13,13 +10,14 @@ import static org.hamcrest.Matchers.equalTo
 class MainWindowSpec extends Specification{
 
     private MainWindow mainWindow
-    private SniperTableModel model
+    private SniperPortfolio portfolio
     private AuctionSniperDriver driver;
 
 
     def setup(){
-        model = Mock()
+        portfolio = Mock()
         driver = new AuctionSniperDriver(1000)
+
     }
 
     def "make user request when join button click"() {
@@ -27,12 +25,10 @@ class MainWindowSpec extends Specification{
         ValueMatcherProbe<String> buttonProb =
                 new ValueMatcherProbe<>(equalTo("item-test"), "Join request")
 
-        mainWindow = new MainWindow(model, new UserEventListener() {
-            @Override
-            void joinAuction(String item) {
-                buttonProb.setReceivedValue(item)
-            }
-        })
+        mainWindow = new MainWindow(portfolio)
+
+        mainWindow.addUserEventListener((String item) -> buttonProb.setReceivedValue(item))
+
         when:
         driver.statBiddingIn("item-test")
 

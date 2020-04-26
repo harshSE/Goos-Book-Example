@@ -1,4 +1,4 @@
-package org.harshdev.goosbook
+package org.harshdev.goosbook.auctionsniper
 
 enum SniperState {
 

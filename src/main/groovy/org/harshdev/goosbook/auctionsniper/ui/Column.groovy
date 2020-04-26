@@ -1,6 +1,6 @@
 package org.harshdev.goosbook.auctionsniper.ui
 
-import org.harshdev.goosbook.SniperSnapShot
+import org.harshdev.goosbook.auctionsniper.SniperSnapShot
 
 enum Column {
     ITEM("Item") {
