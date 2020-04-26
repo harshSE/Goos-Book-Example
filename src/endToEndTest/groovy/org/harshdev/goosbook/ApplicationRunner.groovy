@@ -1,8 +1,7 @@
 package org.harshdev.goosbook
 
+import org.harshdev.goosbook.auctionsniper.Main
 import org.harshdev.goosbook.auctionsniper.ui.MainWindow
-
-import java.util.stream.Collectors
 
 class ApplicationRunner {
     private static final String SNIPER_ID = "sniper"
@@ -14,7 +13,7 @@ class ApplicationRunner {
 
     void startBiddingIn(FakeAuctionServer... auctions) {
 
-        driver = startSniper(auctions)
+        driver = startSniper()
         for(auction in auctions) {
             String item = auction.getItemId()
             Thread.sleep(100)
@@ -24,13 +23,12 @@ class ApplicationRunner {
 
     }
 
-    private AuctionSniperDriver startSniper(FakeAuctionServer... auctions) {
-        String items = Arrays.stream(auctions).map(FakeAuctionServer::getItemId).collect(Collectors.joining(","))
+    private AuctionSniperDriver startSniper() {
         Thread thread = new Thread("Test Application") {
             @Override
             void run() {
                 try {
-                    Main.main(ApplicationRunner.this.XMPP_HOSTNAME, SNIPER_ID, SNIPER_PASSWORD, items)
+                    Main.main(ApplicationRunner.this.XMPP_HOSTNAME, SNIPER_ID, SNIPER_PASSWORD)
                 } catch (Exception ex) {
                     ex.printStackTrace()
                 }

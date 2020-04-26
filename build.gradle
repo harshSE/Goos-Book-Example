@@ -69,12 +69,12 @@ dependencies {
     /**
      * Unit testing libs
      */
-    testRuntimeOnly('org.junit.platform:junit-platform-launcher:1.6.1')
-    testRuntimeOnly('org.junit.jupiter:junit-jupiter-engine:5.6.1')
-    testRuntimeOnly('org.junit.vintage:junit-vintage-engine:5.6.1')
+    integrationTestRuntimeOnly('org.junit.jupiter:junit-jupiter-engine:5.6.1')
+
 
     testImplementation('org.spockframework:spock-core:2.0-M2-groovy-3.0')
     testImplementation('net.bytebuddy:byte-buddy:1.10.9')
+    testImplementation('org.objenesis:objenesis:3.1')
 
     /**
      * Integration test libs
@@ -86,10 +86,11 @@ dependencies {
     integrationTestImplementation('com.googlecode.windowlicker:windowlicker-swing:r268')
     integrationTestImplementation('org.assertj:assertj-core:3.15.0')
     integrationTestImplementation('net.bytebuddy:byte-buddy:1.10.9')
+    integrationTestImplementation('org.objenesis:objenesis:3.1')
 
-    integrationTestRuntimeOnly('org.junit.platform:junit-platform-launcher:1.6.1')
+
+
     integrationTestRuntimeOnly('org.junit.jupiter:junit-jupiter-engine:5.6.1')
-    integrationTestRuntimeOnly('org.junit.vintage:junit-vintage-engine:5.6.1')
 
     /**
      * End to End test libs
@@ -100,9 +101,8 @@ dependencies {
     endToEndTestImplementation('org.spockframework:spock-core:2.0-M2-groovy-3.0')
     endToEndTestImplementation('org.assertj:assertj-core:3.15.0')
     endToEndTestImplementation('com.googlecode.windowlicker:windowlicker-swing:r268')
-    endToEndTestRuntimeOnly('org.junit.platform:junit-platform-launcher:1.6.1')
     endToEndTestRuntimeOnly('org.junit.jupiter:junit-jupiter-engine:5.6.1')
-    endToEndTestRuntimeOnly('org.junit.vintage:junit-vintage-engine:5.6.1')
+
 
 
 }

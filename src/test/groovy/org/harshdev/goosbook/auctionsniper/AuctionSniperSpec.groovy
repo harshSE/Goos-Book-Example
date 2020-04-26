@@ -1,12 +1,12 @@
-package org.harshdev.goosbook
+package org.harshdev.goosbook.auctionsniper
 
 
 import spock.lang.Specification
 
-import static org.harshdev.goosbook.AuctionEventListener.PriceSource.FromOtherBidder
-import static org.harshdev.goosbook.AuctionEventListener.PriceSource.FromSniper
-import static org.harshdev.goosbook.SniperState.BIDDING
-import static org.harshdev.goosbook.SniperState.WINNING
+import static org.harshdev.goosbook.auctionsniper.AuctionEventListener.PriceSource.FromOtherBidder
+import static org.harshdev.goosbook.auctionsniper.AuctionEventListener.PriceSource.FromSniper
+import static org.harshdev.goosbook.auctionsniper.SniperState.BIDDING
+import static org.harshdev.goosbook.auctionsniper.SniperState.WINNING
 
 class AuctionSniperSpec extends Specification{
 
@@ -19,7 +19,8 @@ class AuctionSniperSpec extends Specification{
         sniperListener = Mock()
         auction = Mock()
 
-        auctionSniper = new AuctionSniper(item,sniperListener, auction)
+        auctionSniper = new AuctionSniper(item, auction)
+        auctionSniper.addSniperListener(sniperListener)
     }
 
     def "bid higher by incremented price when new price received from other bidder" () {

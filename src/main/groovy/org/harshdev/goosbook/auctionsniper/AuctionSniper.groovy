@@ -1,14 +1,16 @@
-package org.harshdev.goosbook
+package org.harshdev.goosbook.auctionsniper
+
+import java.util.concurrent.CopyOnWriteArrayList
 
 class AuctionSniper implements AuctionEventListener{
 
-    private final SniperListener sniperListener
+    private final List<SniperListener> sniperListeners
     private final Auction auction
     private SniperSnapShot snapShot;
 
-    AuctionSniper(String item,SniperListener sniperListener, Auction auction) {
+    AuctionSniper(String item, Auction auction) {
         this.auction = auction
-        this.sniperListener = sniperListener
+        this.sniperListeners = [] as CopyOnWriteArrayList
         this.snapShot = SniperSnapShot.joining(item)
     }
 
@@ -16,8 +18,16 @@ class AuctionSniper implements AuctionEventListener{
     void auctionClosed() {
         snapShot = snapShot.close()
         notifyChange()
-
     }
+
+    void addSniperListener(SniperListener listener ) {
+        sniperListeners << listener
+    }
+
+    SniperSnapShot getSnapShot() {
+        return snapShot
+    }
+
 
     @Override
     void currentPrice(int price, int increment, PriceSource priceSource) {
@@ -35,7 +45,9 @@ class AuctionSniper implements AuctionEventListener{
     }
 
     private notifyChange() {
-        sniperListener.sniperStateChanged(snapShot)
+        sniperListeners.each {
+          it.sniperStateChanged(snapShot)
+        }
     }
 
 }

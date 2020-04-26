@@ -1,5 +1,6 @@
-package org.harshdev.goosbook
+package org.harshdev.goosbook.auctionsniper.xmpp
 
+import org.harshdev.goosbook.auctionsniper.AuctionEventListener
 import org.jivesoftware.smack.packet.Message;
 
 class AuctionMessageTranslator {

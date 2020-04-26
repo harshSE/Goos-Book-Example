@@ -1,7 +1,7 @@
 package org.harshdev.goosbook.auctionsniper.ui
 
-import org.harshdev.goosbook.SniperSnapShot
-import org.harshdev.goosbook.SniperState
+import org.harshdev.goosbook.auctionsniper.SniperSnapShot
+import org.harshdev.goosbook.auctionsniper.SniperState
 import spock.lang.Specification
 
 class ColumnSpec extends Specification {

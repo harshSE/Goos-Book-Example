@@ -1,13 +1,10 @@
 package org.harshdev.goosbook.auctionsniper.ui
 
-
-import org.harshdev.goosbook.SniperListener
-import org.harshdev.goosbook.SniperSnapShot
-import org.harshdev.goosbook.SniperState
+import org.harshdev.goosbook.auctionsniper.*
 
 import javax.swing.table.AbstractTableModel
 
-class SniperTableModel extends AbstractTableModel implements SniperListener{
+class SniperTableModel extends AbstractTableModel implements SniperListener, SniperCollector, PortfolioListener{
     private final static Map<SniperState, String> STATUS_TEXT = [(SniperState.JOINING): "Joining",
                                                                  (SniperState.BIDDING): "Bidding",
                                                                  (SniperState.WINNING): "Winning",
@@ -72,4 +69,15 @@ class SniperTableModel extends AbstractTableModel implements SniperListener{
         fireTableRowsInserted(index, index)
     }
 
+    @Override
+    void addSniper(AuctionSniper auctionSniper) {
+        sniperStateChanged(auctionSniper.getSnapShot())
+        auctionSniper.addSniperListener(new SwingThreadSniperListener(this))
+    }
+
+    @Override
+    void sniperAdded(AuctionSniper sniper) {
+        sniperStateChanged(sniper.getSnapShot())
+        sniper.addSniperListener(new SwingThreadSniperListener(this))
+    }
 }

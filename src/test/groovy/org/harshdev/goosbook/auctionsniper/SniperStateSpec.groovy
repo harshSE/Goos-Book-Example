@@ -1,5 +1,6 @@
-package org.harshdev.goosbook
+package org.harshdev.goosbook.auctionsniper
 
+import org.harshdev.goosbook.auctionsniper.SniperState
 import spock.lang.Specification
 
 class SniperStateSpec extends Specification {

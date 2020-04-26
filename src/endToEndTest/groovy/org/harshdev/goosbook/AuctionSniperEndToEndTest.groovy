@@ -1,7 +1,6 @@
 package org.harshdev.goosbook
 
-import spock.lang.Ignore
-import spock.lang.PendingFeature
+
 import spock.lang.Specification
 
 class AuctionSniperEndToEndTest extends Specification {
