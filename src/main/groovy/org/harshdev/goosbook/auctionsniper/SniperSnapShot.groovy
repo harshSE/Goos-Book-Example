@@ -21,7 +21,7 @@ class SniperSnapShot {
     }
 
     SniperSnapShot close() {
-        new SniperSnapShot(item,getLastPrice(), getLastBid(), state.whenAuctionClosed())
+        new SniperSnapShot(item,lastPrice, lastBid, state.whenAuctionClosed())
     }
 
     SniperSnapShot winning(int price) {
@@ -30,5 +30,9 @@ class SniperSnapShot {
 
     SniperSnapShot bidding(int price, int bid) {
         new SniperSnapShot(item,price, bid, SniperState.BIDDING)
+    }
+
+    SniperSnapShot losing(int price) {
+        new SniperSnapShot(item,price, lastBid, SniperState.LOSING)
     }
 }

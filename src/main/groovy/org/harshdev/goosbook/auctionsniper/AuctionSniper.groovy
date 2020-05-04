@@ -5,13 +5,15 @@ import java.util.concurrent.CopyOnWriteArrayList
 class AuctionSniper implements AuctionEventListener{
 
     private final List<SniperListener> sniperListeners
+    private Item item;
     private final Auction auction
     private SniperSnapShot snapShot;
 
-    AuctionSniper(String item, Auction auction) {
+    AuctionSniper(Item item, Auction auction) {
+        this.item = item;
         this.auction = auction
         this.sniperListeners = [] as CopyOnWriteArrayList
-        this.snapShot = SniperSnapShot.joining(item)
+        this.snapShot = SniperSnapShot.joining(item.getItemId())
     }
 
     @Override
@@ -38,9 +40,14 @@ class AuctionSniper implements AuctionEventListener{
             notifyChange()
         } else {
             int bid = price + increment
-            snapShot = snapShot.bidding(price, bid)
-            notifyChange()
-            auction.bid(price + increment)
+            if(shouldBidFurther(bid)) {
+                snapShot = snapShot.bidding(price, bid)
+                notifyChange()
+                auction.bid(price + increment)
+            } else {
+                snapShot = snapShot.losing(price)
+                notifyChange()
+            }
         }
     }
 
@@ -50,4 +57,7 @@ class AuctionSniper implements AuctionEventListener{
         }
     }
 
+    private boolean shouldBidFurther(int newPrice) {
+        return item.allowBid(newPrice)
+    }
 }

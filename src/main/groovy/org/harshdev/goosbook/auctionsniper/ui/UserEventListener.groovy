@@ -1,5 +1,7 @@
 package org.harshdev.goosbook.auctionsniper.ui
 
-interface UserEventListener {
-    void joinAuction(String item)
+import org.harshdev.goosbook.auctionsniper.Item
+
+trait UserEventListener {
+    abstract void joinAuction(Item item)
 }

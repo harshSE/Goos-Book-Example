@@ -13,7 +13,7 @@ class Main {
     private static final int ARGS_HOSTNAME = 0
     private static final int ARGS_USERNAME = 1
     private static final int ARGS_PASSWORD = 2
-    static final String MAIN_WINDOW_NAME = ""
+    static final String MAIN_WINDOW_NAME = "Sniper"
     private SniperPortfolio portfolio
 
     private static Main main

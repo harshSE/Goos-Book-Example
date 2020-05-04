@@ -15,6 +15,11 @@ class SniperStateSpec extends Specification {
         SniperState.BIDDING.whenAuctionClosed() == SniperState.LOST
     }
 
+    def "sniper lost when closed in losing state"() {
+        expect:
+        SniperState.LOSING.whenAuctionClosed() == SniperState.LOST
+    }
+
     def "sniper won when closed in winning state"() {
         expect:
         SniperState.WINNING.whenAuctionClosed() == SniperState.WON

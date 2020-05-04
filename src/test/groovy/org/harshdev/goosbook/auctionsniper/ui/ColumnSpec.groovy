@@ -21,10 +21,10 @@ class ColumnSpec extends Specification {
 
         where:
         column              | field         || value
-        Column.ITEM         | "Item"              || "test-item"
+        Column.ITEM         | "Item"        || "test-item"
         Column.LAST_PRICE   | "Last price"  || 100
-        Column.LAST_BID     | "Last price"  || 10
-        Column.SNIPER_STATE | "Last price"  || "Bidding"
+        Column.LAST_BID     | "Last Bid"    || 10
+        Column.SNIPER_STATE | "State"       || "Bidding"
 
     }
 

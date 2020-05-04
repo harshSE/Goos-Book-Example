@@ -10,17 +10,14 @@ class ApplicationRunner {
     static String SNIPER_XMPP_ID = "sniper@harshdev.com/auction"
     private AuctionSniperDriver driver
 
+    ApplicationRunner() {
+        driver = startSniper()
+    }
 
     void startBiddingIn(FakeAuctionServer... auctions) {
-
-        driver = startSniper()
         for(auction in auctions) {
-            String item = auction.getItemId()
-            Thread.sleep(100)
-            driver.statBiddingIn(item)
-            driver.showSniperStatus(auction.getItemId(), 0,0,"Joining")
+            startBiddingInWithStopPrice(auction, Integer.MAX_VALUE)
         }
-
     }
 
     private AuctionSniperDriver startSniper() {
@@ -63,5 +60,16 @@ class ApplicationRunner {
 
     void showsSnipeHasWonTheAuction(FakeAuctionServer auction, int lastPrice) {
         driver.showSniperStatus(auction.getItemId(),lastPrice, lastPrice, "Won")
+    }
+
+    void startBiddingInWithStopPrice(FakeAuctionServer auction, int stopPrice) {
+        String item = auction.getItemId()
+        Thread.sleep(100)
+        driver.statBiddingIn(item, stopPrice)
+        driver.showSniperStatus(item, 0,0,"Joining")
+    }
+
+    void hasShownSniperIsLosing(FakeAuctionServer auction, int lastPrice, int lastBid) {
+        driver.showSniperStatus(auction.getItemId(),lastPrice, lastBid, "Losing")
     }
 }
