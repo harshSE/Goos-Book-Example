@@ -96,6 +96,35 @@ class AuctionSniperEndToEndTest extends Specification {
         application.showsSnipeHasWonTheAuction(item65432Auction, 550)
     }
 
+
+    def "sniper loses an auction when price is too high" () {
+        when:
+
+        item54321Auction.startSellingItem()
+
+        application.startBiddingInWithStopPrice(item54321Auction, 1100)
+
+        then:
+        item54321Auction.hasReceivedJoinRequestFromSniper(ApplicationRunner.SNIPER_XMPP_ID)
+
+        item54321Auction.reportPrice(1000, 98, "other bidder")
+        application.hasShownSniperIsBidding(item54321Auction,1000, 1098)
+
+        item54321Auction.hasReceivedBid(1098, ApplicationRunner.SNIPER_XMPP_ID)
+
+        item54321Auction.reportPrice(1101, 1, "other bidder")
+
+        application.hasShownSniperIsLosing(item54321Auction, 1101, 1098)
+
+        item54321Auction.reportPrice(1102, 1, "second bidder")
+        application.hasShownSniperIsLosing(item54321Auction, 1101, 1098)
+
+        item54321Auction.announceClosed()
+
+        then:
+        application.showSniperHasLostAuction(item54321Auction, 1102, 1098)
+    }
+
     def cleanup() {
         application.stop();
         item54321Auction.stop()

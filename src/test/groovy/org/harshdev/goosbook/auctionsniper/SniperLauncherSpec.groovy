@@ -29,7 +29,7 @@ class SniperLauncherSpec extends Specification {
 
 
         when:
-        launcher.joinAuction(item)
+        launcher.joinAuction(new Item(item, 1000))
 
         then:
         1* collector.addSniper(_)

@@ -5,6 +5,7 @@ import org.harshdev.goosbook.auctionsniper.AuctionSniper
 import org.harshdev.goosbook.auctionsniper.SniperSnapShot
 import org.harshdev.goosbook.auctionsniper.SniperState
 import spock.lang.Specification
+import spock.lang.Unroll
 
 import javax.swing.event.TableModelListener
 
@@ -100,7 +101,7 @@ class SniperTableModelSpec extends Specification {
         sniper.getSnapShot() >> joining
 
         when:
-        model.addSniper(sniper)
+        model.sniperAdded(sniper)
 
         then:
         model.size() == 1
@@ -108,6 +109,30 @@ class SniperTableModelSpec extends Specification {
         model.getValueAt(0, Column.LAST_PRICE.ordinal()) == 0
         model.getValueAt(0, Column.LAST_BID.ordinal()) == 0
         model.getValueAt(0, Column.SNIPER_STATE.ordinal()) == "Joining"
+    }
+
+    @Unroll("display #value as auction state when status is #state")
+    def 'display value as auction state when status is state'(){
+        given:
+        SniperSnapShot snapShot = new SniperSnapShot(null, 0, 0, state);
+        AuctionSniper sniper = Mock()
+        sniper.getSnapShot() >> snapShot
+
+        when:
+        model.sniperAdded(sniper)
+
+        then:
+        value == model.getValueAt(0, 3)
+
+        where:
+        state || value
+        SniperState.BIDDING || "Bidding"
+        SniperState.JOINING || "Joining"
+        SniperState.WON || "Won"
+        SniperState.WINNING || "Winning"
+        SniperState.LOST || "Lost"
+        SniperState.LOSING || "Losing"
+
     }
 
     def "setsUpColumnHeadings" () {

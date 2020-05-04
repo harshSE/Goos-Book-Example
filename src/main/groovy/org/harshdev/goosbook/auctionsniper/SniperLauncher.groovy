@@ -18,12 +18,12 @@ class SniperLauncher implements UserEventListener{
     }
 
     @Override
-    void joinAuction(String item) {
+    void joinAuction(Item item) {
         executor.execute(() -> join(item))
     }
 
-    private void join(String item) {
-        XMPPAuction auction = auctionHouse.auctionFor(item);
+    private void join(Item item) {
+        XMPPAuction auction = auctionHouse.auctionFor(item.getItemId());
         AuctionSniper sniper = new AuctionSniper(item, auction)
         auction.addEventListener(sniper)
         collector.addSniper(sniper)

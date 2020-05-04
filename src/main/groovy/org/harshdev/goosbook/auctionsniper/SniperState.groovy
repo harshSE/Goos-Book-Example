@@ -16,6 +16,12 @@ enum SniperState {
         }
     },
     LOST("LOST"),
+    LOSING("LOSING") {
+        @Override
+        SniperState whenAuctionClosed() {
+            LOST
+        }
+    },
     WON("WIN"),
 
     WINNING("WINNING"){

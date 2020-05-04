@@ -1,14 +1,12 @@
 package org.harshdev.goosbook.auctionsniper
 
-
 import spock.lang.Specification
 
 import static org.harshdev.goosbook.auctionsniper.AuctionEventListener.PriceSource.FromOtherBidder
 import static org.harshdev.goosbook.auctionsniper.AuctionEventListener.PriceSource.FromSniper
-import static org.harshdev.goosbook.auctionsniper.SniperState.BIDDING
-import static org.harshdev.goosbook.auctionsniper.SniperState.WINNING
+import static org.harshdev.goosbook.auctionsniper.SniperState.*
 
-class AuctionSniperSpec extends Specification{
+class AuctionSniperSpec extends Specification {
 
     private SniperListener sniperListener;
     private Auction auction
@@ -19,19 +17,19 @@ class AuctionSniperSpec extends Specification{
         sniperListener = Mock()
         auction = Mock()
 
-        auctionSniper = new AuctionSniper(item, auction)
+        auctionSniper = new AuctionSniper(new Item(item, Integer.MAX_VALUE), auction)
         auctionSniper.addSniperListener(sniperListener)
     }
 
-    def "bid higher by incremented price when new price received from other bidder" () {
+    def "bid higher by incremented price when new price received from other bidder"() {
         when:
         auctionSniper.currentPrice(100, 7, FromOtherBidder)
 
         then:
-        1* auction.bid(107)
+        1 * auction.bid(107)
     }
 
-    def "report bidding when new price received from other bidder" () {
+    def "report bidding when new price received from other bidder"() {
         def lastPrice = 100
         def increment = 7
         def lastBid = 107
@@ -39,15 +37,15 @@ class AuctionSniperSpec extends Specification{
         auctionSniper.currentPrice(lastPrice, increment, FromOtherBidder)
 
         then:
-        1* sniperListener.sniperStateChanged(new SniperSnapShot(item, lastPrice, lastBid, BIDDING))
+        1 * sniperListener.sniperStateChanged(new SniperSnapShot(item, lastPrice, lastBid, BIDDING))
     }
 
-    def "report winning when new price received from sniper" () {
+    def "report winning when new price received from sniper"() {
         when:
         auctionSniper.currentPrice(100, 7, FromSniper)
 
         then:
-        1* sniperListener.sniperStateChanged(new SniperSnapShot(item, 100, 100, WINNING))
+        1 * sniperListener.sniperStateChanged(new SniperSnapShot(item, 100, 100, WINNING))
     }
 
 
@@ -56,20 +54,22 @@ class AuctionSniperSpec extends Specification{
         auctionSniper.auctionClosed()
 
         then:
-        1* sniperListener.sniperStateChanged(new SniperSnapShot(item, 0, 0, SniperState.LOST))
+        1 * sniperListener.sniperStateChanged(new SniperSnapShot(item, 0, 0, SniperState.LOST))
 
     }
 
     def "report loss if auction close while bidding"() {
         when:
 
-        auctionSniper.currentPrice(100, 10, AuctionEventListener.PriceSource.FromOtherBidder)
+        auctionSniper.currentPrice(100, 10, FromOtherBidder)
 
         auctionSniper.auctionClosed()
 
         then:
-        1* sniperListener.sniperStateChanged(new SniperSnapShot(item, 100, 110, BIDDING))
-        1* sniperListener.sniperStateChanged(new SniperSnapShot(item, 100, 110, SniperState.LOST))
+        1 * sniperListener.sniperStateChanged(new SniperSnapShot(item, 100, 110, BIDDING))
+
+        then:
+        1 * sniperListener.sniperStateChanged(new SniperSnapShot(item, 100, 110, SniperState.LOST))
     }
 
     def "report won if auction closes when winning"() {
@@ -79,7 +79,28 @@ class AuctionSniperSpec extends Specification{
         auctionSniper.auctionClosed()
 
         then:
-        1* sniperListener.sniperStateChanged(new SniperSnapShot(item, 100, 100, WINNING))
-        1* sniperListener.sniperStateChanged(new SniperSnapShot(item, 100, 100, SniperState.WON))
+        1 * sniperListener.sniperStateChanged(new SniperSnapShot(item, 100, 100, WINNING))
+        then:
+        1 * sniperListener.sniperStateChanged(new SniperSnapShot(item, 100, 100, SniperState.WON))
+    }
+
+    def "report losing and stop further bid when new price is higher than stop price"() {
+        given:
+        auctionSniper = new AuctionSniper(new Item(item, 110), auction)
+        auctionSniper.addSniperListener(sniperListener)
+        when:
+
+        auctionSniper.currentPrice(100, 10, FromOtherBidder)
+
+        auctionSniper.currentPrice(111, 10, FromOtherBidder)
+
+        then:
+        1 * sniperListener.sniperStateChanged(new SniperSnapShot(item, 100, 110, BIDDING))
+        1 * auction.bid(110)
+
+        then:
+        1 * sniperListener.sniperStateChanged(new SniperSnapShot(item, 111, 110, LOSING))
+        0 * auction.bid(_)
+
     }
 }
