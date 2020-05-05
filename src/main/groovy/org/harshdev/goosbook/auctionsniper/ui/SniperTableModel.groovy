@@ -10,7 +10,8 @@ class SniperTableModel extends AbstractTableModel implements SniperListener, Por
                                                                  (SniperState.WINNING): "Winning",
                                                                  (SniperState.LOST): "Lost",
                                                                  (SniperState.LOSING): "Losing",
-                                                                 (SniperState.WON): "Won"]
+                                                                 (SniperState.WON): "Won",
+                                                                 (SniperState.FAILED): "Failed"]
     private HashMap<String,Integer> itemToSnapShot;
     private List<SniperSnapShot> snapShots
 

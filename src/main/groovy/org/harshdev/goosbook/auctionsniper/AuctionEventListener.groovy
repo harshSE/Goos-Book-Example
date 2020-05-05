@@ -1,10 +1,13 @@
 package org.harshdev.goosbook.auctionsniper;
 
-interface AuctionEventListener extends EventListener{
+trait AuctionEventListener implements EventListener{
     enum PriceSource {
         FromSniper,
         FromOtherBidder
     }
-    void auctionClosed()
-    void currentPrice(int price, int increment, PriceSource priceSource);
+    abstract void auctionClosed()
+    void auctionFailed() {
+
+    }
+    abstract void currentPrice(int price, int increment, PriceSource priceSource);
 }

@@ -1,8 +1,6 @@
 package org.harshdev.goosbook.auctionsniper.xmpp
 
-
 import org.harshdev.goosbook.FakeAuctionServer
-import org.jivesoftware.smack.tcp.XMPPTCPConnection
 import spock.lang.Specification
 
 import java.util.concurrent.CountDownLatch
@@ -18,7 +16,6 @@ class AuctionHouseSpec extends Specification{
     private String item = "item-54321"
     private FakeAuctionServer server
     private XMPPAuction auction
-    private XMPPTCPConnection connection
     private AuctionHouse auctionHouse
 
     def setup(){
@@ -47,6 +44,8 @@ class AuctionHouseSpec extends Specification{
         then:
         assertTrue(latch.await(2, SECONDS))
     }
+
+
 
     def cleanup() {
         server.stop()

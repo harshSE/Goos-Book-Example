@@ -92,4 +92,13 @@ class FakeAuctionServer {
     XMPPTCPConnection getConnection() {
         connection
     }
+
+
+    void sendInvalidMessage(String message) {
+        currentChat.send(message)
+    }
+
+    String getAuctionId() {
+        currentChat.getXmppAddressOfChatPartner().toString()
+    }
 }

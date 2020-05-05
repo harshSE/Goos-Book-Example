@@ -35,4 +35,8 @@ class SniperSnapShot {
     SniperSnapShot losing(int price) {
         new SniperSnapShot(item,price, lastBid, SniperState.LOSING)
     }
+
+    SniperSnapShot failed() {
+        new SniperSnapShot(item, lastPrice, lastBid, SniperState.FAILED)
+    }
 }

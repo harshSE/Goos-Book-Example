@@ -1,25 +1,56 @@
 package org.harshdev.goosbook.auctionsniper.xmpp
 
 import org.harshdev.goosbook.auctionsniper.AuctionEventListener
-import org.jivesoftware.smack.packet.Message;
+import org.jivesoftware.smack.packet.Message
+
+import java.util.concurrent.CopyOnWriteArrayList
 
 class AuctionMessageTranslator {
 
-    private final AuctionEventListener listener
+    private final List<AuctionEventListener> listeners
     private final String sniperId
+    private LoggingXMPPFailureReporter reporter
 
-    AuctionMessageTranslator(String sniperId, AuctionEventListener listener) {
+    AuctionMessageTranslator(String sniperId, LoggingXMPPFailureReporter reporter) {
+        this.reporter = reporter
         this.sniperId = sniperId
-        this.listener = listener
+        this.listeners = [] as CopyOnWriteArrayList
     }
 
     void processMessage(Message message) {
-        AuctionEvent auctionEvent = AuctionEvent.from(message)
+        AuctionEvent auctionEvent = null;
+        try {
+            auctionEvent = AuctionEvent.from(message)
+            if(auctionEvent.isPriceEvent()) {
+                notifyCurrentPrice(auctionEvent)
+            } else if(auctionEvent.isCloseEvent()){
+                notifyAuctionClosed()
+            }
+        } catch(Exception ex) {
+            reporter.canNotTranslateMessage(sniperId, message.getBody(), ex)
+            notifyAuctionFailed()
+        }
+    }
 
-        if(auctionEvent.isPriceEvent()) {
-            listener.currentPrice(auctionEvent.currentPrice(), auctionEvent.increment(), auctionEvent.isFrom(sniperId))
-        } else if(auctionEvent.isCloseEvent()){
-            listener.auctionClosed()
+    private void notifyAuctionFailed() {
+        listeners.each {
+            it.auctionFailed()
+        }
+    }
+
+    void addEventListener(AuctionEventListener listener) {
+        listeners.add listener
+    }
+
+    private void notifyCurrentPrice(AuctionEvent auctionEvent) {
+        listeners.each {
+            it.currentPrice(auctionEvent.currentPrice(), auctionEvent.increment(), auctionEvent.isFrom(sniperId))
+        }
+    }
+
+    private void notifyAuctionClosed(){
+        listeners.each {
+            it.auctionClosed()
         }
     }
 
@@ -32,15 +63,29 @@ class AuctionMessageTranslator {
         }
 
         int currentPrice() {
-            fields.get("CurrentPrice") as Integer
+            get("CurrentPrice") as Integer
+        }
+
+        private String get(String field) {
+            String val = fields.get(field)
+
+            if(Objects.isNull(val)) {
+                throw new MissingPropertyException("$field is missing")
+            }
+
+            val
         }
 
         int increment() {
-            fields.get("Increment") as Integer
+            get("Increment") as Integer
         }
 
         String event() {
-            fields.get("Event")
+            get("Event")
+        }
+
+        String getBidder() {
+            get("Bidder")
         }
 
         boolean isPriceEvent() {
@@ -58,10 +103,6 @@ class AuctionMessageTranslator {
 
         boolean isCloseEvent() {
             "CLOSE".equalsIgnoreCase(event())
-        }
-
-        String getBidder() {
-            fields.get("Bidder")
         }
 
         AuctionEventListener.PriceSource isFrom(String sniperId) {

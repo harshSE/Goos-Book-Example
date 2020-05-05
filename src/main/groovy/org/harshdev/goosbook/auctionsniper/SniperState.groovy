@@ -30,7 +30,13 @@ enum SniperState {
             WON
         }
     },
-    CLOSED("CLOSED")
+    CLOSED("CLOSED"),
+    FAILED("FAILED") {
+        @Override
+        SniperState whenAuctionClosed() {
+            FAILED
+        }
+    }
     ;
 
     public final String name;

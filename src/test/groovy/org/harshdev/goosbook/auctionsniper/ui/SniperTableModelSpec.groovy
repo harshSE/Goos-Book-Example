@@ -132,6 +132,7 @@ class SniperTableModelSpec extends Specification {
         SniperState.WINNING || "Winning"
         SniperState.LOST || "Lost"
         SniperState.LOSING || "Losing"
+        SniperState.FAILED || "Failed"
 
     }
 

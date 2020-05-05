@@ -103,4 +103,23 @@ class AuctionSniperSpec extends Specification {
         0 * auction.bid(_)
 
     }
+
+    def "report auction failed when action failed received"() {
+        given:
+        auctionSniper = new AuctionSniper(new Item(item, 110), auction)
+        auctionSniper.addSniperListener(sniperListener)
+        when:
+
+        auctionSniper.currentPrice(100, 10, FromOtherBidder)
+
+        auctionSniper.auctionFailed()
+
+        then:
+        1 * sniperListener.sniperStateChanged(new SniperSnapShot(item, 100, 110, BIDDING))
+        1 * auction.bid(110)
+
+        then:
+        1 * sniperListener.sniperStateChanged(new SniperSnapShot(item, 100, 110, FAILED))
+    }
+
 }
