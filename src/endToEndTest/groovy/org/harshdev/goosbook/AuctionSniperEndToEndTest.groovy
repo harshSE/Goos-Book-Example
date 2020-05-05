@@ -106,6 +106,7 @@ class AuctionSniperEndToEndTest extends Specification {
 
         then:
         item54321Auction.hasReceivedJoinRequestFromSniper(ApplicationRunner.SNIPER_XMPP_ID)
+        item65432Auction.hasReceivedJoinRequestFromSniper(ApplicationRunner.SNIPER_XMPP_ID)
 
         item54321Auction.reportPrice(1000, 98, "other bidder")
         application.hasShownSniperIsBidding(item54321Auction,1000, 1098)
@@ -125,6 +126,34 @@ class AuctionSniperEndToEndTest extends Specification {
         application.showSniperHasLostAuction(item54321Auction, 1102, 1098)
     }
 
+    def "sniper report invalid message and stop responding to events"() {
+        when:
+        String brokenMessage = "a broken message"
+        item54321Auction.startSellingItem()
+        item65432Auction.startSellingItem()
+
+        application.startBiddingIn(item54321Auction, item65432Auction)
+
+        then:
+        item54321Auction.hasReceivedJoinRequestFromSniper(ApplicationRunner.SNIPER_XMPP_ID)
+
+        item54321Auction.reportPrice(1000, 98, "other bidder")
+        application.hasShownSniperIsBidding(item54321Auction, 1000, 1098)
+
+        item54321Auction.hasReceivedBid(1098, ApplicationRunner.SNIPER_XMPP_ID)
+
+
+        item54321Auction.sendInvalidMessage(brokenMessage)
+        application.hasShownSniperHasFailed(item54321Auction, 1000, 1098)
+
+        item54321Auction.reportPrice(2000, 200, "other bidder")
+        waitForAnotherAuctionEvent()
+
+        application.reportsInvalidMessage(item54321Auction, brokenMessage)
+        application.hasShownSniperHasFailed(item54321Auction, 1000, 1098)
+
+    }
+
     def cleanup() {
         application.stop();
         item54321Auction.stop()
@@ -132,7 +161,10 @@ class AuctionSniperEndToEndTest extends Specification {
     }
 
 
-
-
-
+    void waitForAnotherAuctionEvent() {
+        item65432Auction.hasReceivedJoinRequestFromSniper(ApplicationRunner.SNIPER_XMPP_ID)
+        item65432Auction.reportPrice(500, 50, "other bidder")
+        application.hasShownSniperIsBidding(item65432Auction, 500, 550)
+        item65432Auction.hasReceivedBid(550, ApplicationRunner.SNIPER_XMPP_ID)
+    }
 }

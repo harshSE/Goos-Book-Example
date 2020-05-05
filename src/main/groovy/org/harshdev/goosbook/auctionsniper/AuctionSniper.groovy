@@ -22,6 +22,12 @@ class AuctionSniper implements AuctionEventListener{
         notifyChange()
     }
 
+    @Override
+    void auctionFailed() {
+        snapShot = snapShot.failed()
+        notifyChange()
+    }
+
     void addSniperListener(SniperListener listener ) {
         sniperListeners << listener
     }
@@ -29,6 +35,8 @@ class AuctionSniper implements AuctionEventListener{
     SniperSnapShot getSnapShot() {
         return snapShot
     }
+
+
 
 
     @Override

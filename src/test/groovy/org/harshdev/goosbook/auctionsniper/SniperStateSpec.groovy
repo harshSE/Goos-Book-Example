@@ -2,26 +2,21 @@ package org.harshdev.goosbook.auctionsniper
 
 import org.harshdev.goosbook.auctionsniper.SniperState
 import spock.lang.Specification
+import spock.lang.Unroll
 
 class SniperStateSpec extends Specification {
 
-    def "sniper lost when closed in joining state"() {
+    @Unroll
+    def 'sniper #tostate when closed in #fromstate state'() {
         expect:
-        SniperState.JOINING.whenAuctionClosed() == SniperState.LOST
-    }
+        fromstate.whenAuctionClosed() == tostate
 
-    def "sniper lost when closed in bidding state"() {
-        expect:
-        SniperState.BIDDING.whenAuctionClosed() == SniperState.LOST
-    }
-
-    def "sniper lost when closed in losing state"() {
-        expect:
-        SniperState.LOSING.whenAuctionClosed() == SniperState.LOST
-    }
-
-    def "sniper won when closed in winning state"() {
-        expect:
-        SniperState.WINNING.whenAuctionClosed() == SniperState.WON
+        where:
+        fromstate || tostate
+        SniperState.JOINING  || SniperState.LOST
+        SniperState.BIDDING  || SniperState.LOST
+        SniperState.LOSING   || SniperState.LOST
+        SniperState.WINNING  || SniperState.WON
+        SniperState.FAILED   || SniperState.FAILED
     }
 }

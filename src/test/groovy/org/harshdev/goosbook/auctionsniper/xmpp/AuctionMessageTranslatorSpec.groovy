@@ -1,7 +1,6 @@
 package org.harshdev.goosbook.auctionsniper.xmpp
 
 import org.harshdev.goosbook.auctionsniper.AuctionEventListener
-import org.harshdev.goosbook.auctionsniper.xmpp.AuctionMessageTranslator
 import org.jivesoftware.smack.packet.Message
 import spock.lang.Specification
 
@@ -13,11 +12,14 @@ class AuctionMessageTranslatorSpec  extends Specification{
 
     private AuctionMessageTranslator translator;
     private AuctionEventListener listener;
+    private LoggingXMPPFailureReporter reporter;
     private static String SNIPER_ID = "sniper"
 
     def setup(){
         listener = Mock()
-        translator = new AuctionMessageTranslator(SNIPER_ID, listener);
+        reporter = Mock()
+        translator = new AuctionMessageTranslator(SNIPER_ID, reporter);
+        translator.addEventListener(listener)
     }
 
 
@@ -64,6 +66,51 @@ class AuctionMessageTranslatorSpec  extends Specification{
         then:
         1 * listener.currentPrice(192, 7, FromSniper)
 
+
+    }
+
+    def "notify auction failed when invalid message received" () {
+        given:
+        String brokenMessage =  "broken message"
+
+        Message message = new Message()
+        message.setBody(brokenMessage)
+
+        when:
+        translator.processMessage(message)
+
+        then:
+        1 * listener.auctionFailed()
+
+    }
+
+    def "notify auction failed when message is incomplete" () {
+        given:
+        String brokenMessage =  "Event: PRICE; CurrentPrice: 192; Increment: 7;"
+
+        Message message = new Message()
+        message.setBody(brokenMessage)
+
+        when:
+        translator.processMessage(message)
+
+        then:
+        1 * listener.auctionFailed()
+
+    }
+
+    def "report auction failed when translation failed" () {
+        given:
+        String brokenMessage =  "Event: PRICE; CurrentPrice: 192; Increment: 7;"
+
+        Message message = new Message()
+        message.setBody(brokenMessage)
+
+        when:
+        translator.processMessage(message)
+
+        then:
+        1 * reporter.canNotTranslateMessage(SNIPER_ID, brokenMessage, _)
 
     }
 

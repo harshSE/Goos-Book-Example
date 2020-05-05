@@ -9,14 +9,16 @@ import org.jivesoftware.smack.tcp.XMPPTCPConnection
 import org.jivesoftware.smack.tcp.XMPPTCPConnectionConfiguration
 import org.jxmpp.jid.impl.JidCreate
 
+import java.nio.file.Paths
+
 import static org.jivesoftware.smack.chat2.ChatManager.getInstanceFor
 
 class AuctionHouse {
     static final String AUCTION_RESOURCE = "auction"
     private XMPPTCPConnection connection
-    private String userName
-    private String password
-    private String hostName
+    private final String userName
+    private final String password
+    private final String hostName
 
     AuctionHouse(String userName, String password, String hostName) {
         this.hostName = hostName
@@ -48,6 +50,8 @@ class AuctionHouse {
 
         addMessageListener(chatManager, chat, connection,eventListener.announce())
 
+
+
         auction
     }
 
@@ -58,11 +62,15 @@ class AuctionHouse {
 
 
         String user = connection.getUser().toString()
-        AuctionMessageTranslator translator = new AuctionMessageTranslator(user, eventListener)
+        AuctionMessageTranslator translator = new AuctionMessageTranslator(user, LoggingXMPPFailureReporter.create(Paths.get("report.log")))
 
         //FIXME adding lister for each auction will cause memory leak as message listener never release even though chat ended i.e auction closed.
         IncomingChatMessageListener listener = new XMPPMessageIncomingMessageListener(translator, chat)
         chatManager.addIncomingListener(listener)
+
+        DisconnectEventListener disconnectEventListener = new DisconnectEventListener((IncomingChatMessageListener messageListener) -> chatManager.removeIncomingListener(messageListener), listener)
+        translator.addEventListener(disconnectEventListener)
+        translator.addEventListener(eventListener)
     }
 
 

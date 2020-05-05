@@ -1,5 +1,6 @@
 package org.harshdev.goosbook
 
+import org.assertj.core.api.Assertions
 import org.harshdev.goosbook.auctionsniper.Main
 import org.harshdev.goosbook.auctionsniper.ui.MainWindow
 
@@ -71,5 +72,15 @@ class ApplicationRunner {
 
     void hasShownSniperIsLosing(FakeAuctionServer auction, int lastPrice, int lastBid) {
         driver.showSniperStatus(auction.getItemId(),lastPrice, lastBid, "Losing")
+    }
+
+    void hasShownSniperHasFailed(FakeAuctionServer auction, int lastPrice, int lastBid) {
+        driver.showSniperStatus(auction.getItemId(), lastPrice, lastBid, "Failed")
+    }
+
+    void reportsInvalidMessage(FakeAuctionServer fakeAuctionServer, String message) {
+        List<String> events = new File("report.log").collect {it}
+        Assertions.assertThat(events).hasSize(1);
+        Assertions.assertThat(events.get(0)).contains(fakeAuctionServer.getAuctionId()).contains(message)
     }
 }
